@@ -1,295 +1,306 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevVault | خزينة المطور والأمن السيبراني</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevVault | خزينة المطور والأمن السيبراني</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style type="text/tailwindcss">
+@layer components{
+ .inp{@apply w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500}
+ .lb{@apply block text-xs font-medium text-slate-400}
+ .bs{@apply bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-medium transition}
+ .bp{@apply bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition}
+ .dlg{@apply bg-slate-900 text-slate-100 border border-slate-800 rounded-2xl p-0 m-auto w-[min(92vw,34rem)] max-h-[92vh] backdrop:bg-black/70}
+}
+pre code.hljs{background:transparent;padding:0}
+:focus-visible{outline:2px solid #34d399;outline-offset:2px}
+</style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
 
-    <!-- الشريط العلوي -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                <h1 class="text-xl font-bold tracking-wide text-emerald-400">DevVault <span class="text-xs text-slate-400 font-mono">Sec & Code Edition</span></h1>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="exportData()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1.5" title="تصدير النسخة الاحتياطية">
-                    📤 تصدير
-                </button>
-                <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5" title="استيراد البيانات">
-                    📥 استيراد
-                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                </label>
-                <button onclick="openModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                    + إضافة أمر / سكربت
-                </button>
-            </div>
-        </div>
-    </header>
+<header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+ <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-3">
+  <div class="flex items-center gap-3">
+   <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+   <h1 class="text-xl font-bold tracking-wide text-emerald-400">DevVault <span class="text-xs text-slate-400 font-mono">Sec & Code Edition</span></h1>
+  </div>
+  <div class="flex items-center gap-2 flex-wrap">
+   <button class="bs" onclick="toolsModal.showModal()">🛠 أدوات</button>
+   <button class="bs" onclick="exportData()">📤 تصدير</button>
+   <label class="bs cursor-pointer">📥 استيراد<input type="file" accept=".json" class="hidden" onchange="importData(event)"></label>
+   <button class="bp" onclick="openModal()">+ إضافة أمر / سكربت</button>
+  </div>
+ </div>
+</header>
 
-    <!-- المحتوى الرئيسي -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- شريط البحث الفوري -->
-        <div class="mb-6">
-            <input type="text" id="searchInput" placeholder="ابحث عن أداة Nmap، أمر ADB، أو كود بايثون..." oninput="renderSnippets()"
-                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 shadow-inner">
-        </div>
+<main class="max-w-7xl mx-auto px-4 py-8">
+ <input id="searchInput" class="inp !py-3 !rounded-xl mb-6" placeholder="ابحث في العناوين والأكواد والوسوم…  ( / أو Ctrl+K )" oninput="render()">
+ <div class="flex flex-wrap justify-between items-center gap-3 mb-8">
+  <div id="tabs" class="flex flex-wrap gap-2"></div>
+  <select id="sortSel" class="inp !w-auto !mt-0 !py-1.5 text-xs" onchange="sort=this.value;render()">
+   <option value="new">الأحدث</option><option value="uses">الأكثر استخداماً</option>
+  </select>
+ </div>
+ <div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</main>
 
-        <!-- شريط التصنيفات السريعة (الفلاتر) -->
-        <div id="categoryTabs" class="flex flex-wrap gap-2 mb-8">
-            <!-- سيتم تعبئتها ديناميكياً -->
-        </div>
+<dialog id="snippetModal" class="dlg">
+ <form id="snippetForm" class="p-6 space-y-4 overflow-y-auto max-h-[92vh]">
+  <h2 id="modalTitle" class="text-lg font-bold text-emerald-400"></h2>
+  <label class="lb">العنوان<input id="fTitle" required maxlength="120" class="inp"></label>
+  <label class="lb">التصنيف<select id="fCat" class="inp"></select></label>
+  <label class="lb">الكود أو سطر الأوامر (استخدم {{TARGET}} لمتغيّر يُعبّأ عند النسخ)
+   <textarea id="fCode" rows="4" required dir="ltr" spellcheck="false" class="inp font-mono text-left" placeholder="nmap -sV -T4 -p {{PORT}} {{TARGET}}"></textarea></label>
+  <label class="lb">وصف (اختياري)<input id="fDesc" maxlength="300" class="inp"></label>
+  <label class="lb">وسوم مفصولة بفواصل<input id="fTags" class="inp" placeholder="nmap, recon"></label>
+  <label class="lb">النطاق والتصريح (اختياري)<input id="fScope" maxlength="200" class="inp" placeholder="مثال: مختبر المنزل فقط"></label>
+  <div class="flex justify-end gap-3 pt-2">
+   <button type="button" class="bs" onclick="snippetModal.close()">إلغاء</button>
+   <button type="submit" class="bp">حفظ السكربت</button>
+  </div>
+ </form>
+</dialog>
 
-        <!-- شبكة البطاقات -->
-        <div id="snippetsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- سيتم تعبئتها تلقائياً عبر الجافاسكريبت -->
-        </div>
-    </main>
+<dialog id="varModal" class="dlg">
+ <form id="varForm" class="p-6 space-y-4">
+  <h2 class="text-lg font-bold text-emerald-400">عبّئ المتغيّرات</h2>
+  <div id="varFields" class="space-y-3"></div>
+  <div class="flex justify-end gap-3 pt-2">
+   <button type="button" class="bs" onclick="varModal.close()">إلغاء</button>
+   <button type="submit" class="bp">نسخ الأمر</button>
+  </div>
+ </form>
+</dialog>
 
-    <!-- نافذة منبثقة للإضافة والتعديل (Modal) -->
-    <div id="snippetModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-            <h2 id="modalTitle" class="text-lg font-bold text-emerald-400 mb-4">إضافة أمر أو سكربت جديد</h2>
-            <form id="snippetForm" onsubmit="saveSnippet(event)" class="space-y-4">
-                <input type="hidden" id="snippetId">
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">عنوان الأمر أو الوصف</label>
-                    <input type="text" id="snippetTitle" required placeholder="مثال: فحص شامل للمنافذ بـ Nmap"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">التصنيف التخصصي</label>
-                    <select id="snippetCategory" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-                        <option value="Network Scanning">Network Scanning</option>
-                        <option value="ADB & Android">ADB & Android</option>
-                        <option value="Linux & Bash">Linux & Bash</option>
-                        <option value="Python Scripting">Python Scripting</option>
-                        <option value="Exploitation & Web">Exploitation & Web</option>
-                        <option value="أخرى">أخرى</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">الكود البرمجي أو سطر الأوامر</label>
-                    <textarea id="snippetCode" rows="4" required placeholder="nmap -sV -T4 -p- 192.168.1.1"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm font-mono text-left dir-ltr focus:outline-none focus:border-emerald-500"></textarea>
-                </div>
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm transition">إلغاء</button>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm transition">حفظ السكربت</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<dialog id="toolsModal" class="dlg !w-[min(92vw,40rem)]">
+ <div class="p-6 space-y-6 overflow-y-auto max-h-[92vh]">
+  <div class="flex justify-between items-center">
+   <h2 class="text-lg font-bold text-emerald-400">أدوات مساعدة</h2>
+   <button class="bs" onclick="toolsModal.close()">إغلاق</button>
+  </div>
+  <section><label class="lb">حاسبة CIDR<input id="cidrIn" dir="ltr" class="inp font-mono text-left" placeholder="192.168.1.0/24" oninput="$('#cidrOut').textContent=cidr(this.value)"></label>
+   <pre id="cidrOut" dir="ltr" class="mt-2 text-xs font-mono text-emerald-300 text-left whitespace-pre-wrap"></pre></section>
+  <section><label class="lb">محوّل النصوص (Base64 / URL / Hex)<textarea id="encIn" rows="2" dir="ltr" class="inp font-mono text-left"></textarea></label>
+   <div id="encBtns" class="flex flex-wrap gap-2 my-2"></div>
+   <textarea id="encOut" rows="2" dir="ltr" readonly class="inp font-mono text-left"></textarea></section>
+  <section><span class="lb mb-2">حاسبة chmod</span><div id="chBox" class="space-y-2"></div>
+   <pre id="chOut" dir="ltr" class="mt-2 text-sm font-mono text-emerald-300 text-left"></pre></section>
+ </div>
+</dialog>
 
-    <script>
-        // الأقسام المعتمدة وألوانها المميزة
-        const categories = [
-            { name: 'الكل', color: 'bg-emerald-600 text-white' },
-            { name: 'Network Scanning', color: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
-            { name: 'ADB & Android', color: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
-            { name: 'Linux & Bash', color: 'bg-purple-500/10 text-purple-400 border border-purple-500/20' },
-            { name: 'Python Scripting', color: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' },
-            { name: 'Exploitation & Web', color: 'bg-rose-500/10 text-rose-400 border border-rose-500/20' },
-            { name: 'أخرى', color: 'bg-slate-800 text-slate-300' }
-        ];
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-sm rounded-lg px-4 py-2.5 opacity-0 pointer-events-none transition-opacity z-50"></div>
 
-        let currentFilter = 'الكل';
+<script>
+const $ = s => document.querySelector(s);
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
+const KEY = 'devvault_snippets', VKEY = 'devvault_vars', SCHEMA = 2;
+const CATS = {
+  'Network Scanning': 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+  'ADB & Android': 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+  'Linux & Bash': 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+  'Python Scripting': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+  'Exploitation & Web': 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+  'أخرى': 'bg-slate-800 text-slate-300'
+};
+const SEED = [
+  { id: 1, title: 'فحص الشبكة واكتشاف الخدمات بـ Nmap', category: 'Network Scanning', code: 'nmap -sV -T4 -p- {{TARGET}}', tags: ['nmap', 'recon'] },
+  { id: 2, title: 'فرض تثبيت APK', category: 'ADB & Android', code: 'adb install -r -d {{APK}}', tags: ['adb'] },
+  { id: 3, title: 'رفع ملف إلى الجهاز مؤقتاً', category: 'ADB & Android', code: 'adb push {{FILE}} /data/local/tmp/', tags: ['adb'] },
+  { id: 4, title: 'بحث عن ملفات SUID', category: 'Linux & Bash', code: 'find / -perm -4000 2>/dev/null', tags: ['privesc'] },
+  { id: 5, title: 'سيرفر ويب سريع بلغة بايثون', category: 'Python Scripting', code: 'python3 -m http.server {{PORT}}', tags: ['python'] }
+];
 
-        let snippets = JSON.parse(localStorage.getItem('devvault_snippets')) || [
-            { id: 1, title: 'فحص الشبكة واكتشاف الخدمات بـ Nmap', category: 'Network Scanning', code: 'nmap -sV -T4 -p- 192.168.1.1' },
-            { id: 2, title: 'فرض تثبيت APK متجاوزاً القيود', category: 'ADB & Android', code: 'adb install -r -d hammel_signed.apk' },
-            { id: 3, title: 'رفع ملف APK مؤقتاً لبيئة الشاومي', category: 'ADB & Android', code: 'adb push app.apk /data/local/tmp/' },
-            { id: 4, title: 'بحث عن ملفات بصلاحيات سداسية مريبة', category: 'Linux & Bash', code: 'find / -perm -4000 2>/dev/null' },
-            { id: 5, title: 'سيرفر طوارئ سريع بلغة بايثون', category: 'Python Scripting', code: 'python3 -m http.server 80' }
-        ];
+function read(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } }
+function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast('تعذّر الحفظ في المتصفح'); } }
+function norm(s) {
+  if (!s || typeof s.title !== 'string' || typeof s.code !== 'string') return null;
+  return { id: s.id ?? Date.now() + Math.random(), title: s.title.slice(0, 120),
+    category: CATS[s.category] ? s.category : 'أخرى', code: s.code,
+    desc: String(s.desc || '').slice(0, 300), scope: String(s.scope || '').slice(0, 200),
+    tags: Array.isArray(s.tags) ? s.tags.map(t => String(t).slice(0, 30)).slice(0, 8) : [],
+    fav: !!s.fav, uses: +s.uses || 0 };
+}
+function load() {
+  const raw = read(KEY, null);
+  const arr = Array.isArray(raw) ? raw : Array.isArray(raw?.snippets) ? raw.snippets : null;
+  return (arr || SEED).map(norm).filter(Boolean);
+}
+let snippets = load(), vars = read(VKEY, {}), filter = 'الكل', sort = 'new', editing = null, pending = null;
+const save = () => write(KEY, snippets);
 
-        function saveToStorage() {
-            localStorage.setItem('devvault_snippets', JSON.stringify(snippets));
-        }
+let tt;
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.remove('opacity-0'); clearTimeout(tt); tt = setTimeout(() => t.classList.add('opacity-0'), 1800); }
 
-        function renderTabs() {
-            const tabsContainer = document.getElementById('categoryTabs');
-            tabsContainer.innerHTML = '';
+const names = code => [...new Set([...code.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map(m => m[1]))];
+async function clip(t) {
+  try { await navigator.clipboard.writeText(t); }
+  catch (e) { const a = h('textarea'); a.value = t; document.body.append(a); a.select(); document.execCommand('copy'); a.remove(); }
+}
+async function done(s, text) { await clip(text); s.uses++; save(); toast('تم نسخ الأمر'); render(); }
+function copy(s) {
+  const ns = names(s.code);
+  if (!ns.length) return done(s, s.code);
+  pending = s; const box = $('#varFields'); box.replaceChildren();
+  ns.forEach(n => {
+    const l = h('label', 'lb', n); const i = h('input', 'inp font-mono text-left'); i.dir = 'ltr'; i.name = n; i.value = vars[n] || '';
+    l.append(i); box.append(l);
+  });
+  varModal.showModal(); box.querySelector('input').focus();
+}
+$('#varForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const vals = {}; $('#varFields').querySelectorAll('input').forEach(i => vals[i.name] = i.value);
+  Object.assign(vars, vals); write(VKEY, vars);
+  const s = pending; varModal.close();
+  done(s, s.code.replace(/\{\{\s*(\w+)\s*\}\}/g, (m, n) => vals[n] || m));
+});
 
-            categories.forEach(cat => {
-                const count = cat.name === 'الكل' ? snippets.length : snippets.filter(s => s.category === cat.name).length;
-                const isActive = currentFilter === cat.name;
-                
-                const activeStyle = isActive 
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 border-transparent' 
-                    : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800';
+function btn(label, cls, fn, aria) {
+  const b = h('button', 'text-xs font-medium transition ' + cls, label); b.type = 'button';
+  if (aria) b.setAttribute('aria-label', aria); b.onclick = fn; return b;
+}
 
-                tabsContainer.innerHTML += `
-                    <button onclick="setFilter('${cat.name}')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 ${activeStyle}">
-                        <span>${cat.name}</span>
-                        <span class="bg-black/20 px-1.5 py-0.5 rounded-full text-[10px]">${count}</span>
-                    </button>
-                `;
-            });
-        }
+function card(s) {
+  const c = h('div', 'bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col gap-3 shadow-sm');
+  const top = h('div', 'flex justify-between items-start gap-2');
+  top.append(h('span', 'text-[11px] font-mono px-2.5 py-1 rounded-md ' + CATS[s.category], s.category));
+  const acts = h('div', 'flex gap-2.5 items-center');
+  acts.append(
+    btn(s.fav ? '★' : '☆', 'text-amber-400 !text-base', () => { s.fav = !s.fav; save(); render(); }, 'تثبيت'),
+    btn('نسخ', 'text-slate-400 hover:text-emerald-400', () => copy(s)),
+    btn('تعديل', 'text-sky-400 hover:text-sky-300', () => openModal(s)),
+    btn('حذف', 'text-rose-400 hover:text-rose-300', () => {
+      if (confirm('هل أنت متأكد من حذف هذا الأمر؟')) { snippets = snippets.filter(x => x !== s); save(); render(); }
+    }));
+  top.append(acts);
+  const pre = h('pre', 'bg-slate-950 p-3 rounded-lg text-xs font-mono overflow-x-auto border border-slate-900 text-left'); pre.dir = 'ltr';
+  pre.append(h('code', s.category === 'Python Scripting' ? 'language-python' : 'language-bash', s.code));
+  c.append(top, h('h3', 'font-semibold text-base text-slate-100', s.title));
+  if (s.desc) c.append(h('p', 'text-sm text-slate-400', s.desc));
+  c.append(pre);
+  if (s.tags.length) {
+    const t = h('div', 'flex flex-wrap gap-1.5');
+    s.tags.forEach(x => t.append(btn('#' + x, 'text-[11px] text-slate-400 bg-slate-800 rounded px-2 py-0.5 hover:text-emerald-400', () => { $('#searchInput').value = x; render(); })));
+    c.append(t);
+  }
+  if (s.scope) c.append(h('p', 'text-[11px] text-amber-300/80 border-t border-slate-800 pt-2', '🛡 النطاق: ' + s.scope));
+  if (s.uses) c.append(h('p', 'text-[11px] text-slate-500', 'نُسخ ' + s.uses + ' مرة'));
+  return c;
+}
 
-        function setFilter(category) {
-            currentFilter = category;
-            renderTabs();
-            renderSnippets();
-        }
+function render() {
+  const tabs = $('#tabs'); tabs.replaceChildren();
+  ['الكل', ...Object.keys(CATS)].forEach(n => {
+    const cnt = n === 'الكل' ? snippets.length : snippets.filter(s => s.category === n).length;
+    const on = filter === n;
+    const b = btn('', 'px-3.5 py-1.5 rounded-lg flex items-center gap-2 ' + (on ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'), () => { filter = n; render(); });
+    b.append(h('span', '', n), h('span', 'bg-black/20 px-1.5 py-0.5 rounded-full text-[10px]', cnt));
+    b.setAttribute('aria-pressed', on); tabs.append(b);
+  });
+  const q = $('#searchInput').value.trim().toLowerCase();
+  const list = snippets.filter(s =>
+    (filter === 'الكل' || s.category === filter) &&
+    (!q || [s.title, s.code, s.desc, s.scope, s.tags.join(' ')].some(x => x.toLowerCase().includes(q))))
+    .sort((a, b) => (b.fav - a.fav) || (sort === 'uses' ? b.uses - a.uses : 0));
+  const grid = $('#grid'); grid.replaceChildren(...list.map(card));
+  if (!list.length) grid.append(h('p', 'text-slate-500 col-span-full text-center py-16', 'لا توجد عناصر مطابقة للبحث في هذا القسم.'));
+  grid.querySelectorAll('code').forEach(el => { try { hljs.highlightElement(el); } catch (e) {} });
+}
 
-        function renderSnippets() {
-            const grid = document.getElementById('snippetsGrid');
-            const search = document.getElementById('searchInput').value.toLowerCase();
+$('#fCat').append(...Object.keys(CATS).map(c => { const o = h('option', '', c); o.value = c; return o; }));
+function openModal(s = null) {
+  editing = s;
+  $('#modalTitle').textContent = s ? 'تعديل الأمر أو السكربت' : 'إضافة أمر أو سكربت جديد';
+  $('#snippetForm').reset();
+  if (s) { $('#fTitle').value = s.title; $('#fCat').value = s.category; $('#fCode').value = s.code; $('#fDesc').value = s.desc; $('#fTags').value = s.tags.join(', '); $('#fScope').value = s.scope; }
+  snippetModal.showModal(); $('#fTitle').focus();
+}
+$('#snippetForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = { title: $('#fTitle').value.trim(), category: $('#fCat').value, code: $('#fCode').value.replace(/\s+$/, ''),
+    desc: $('#fDesc').value.trim(), scope: $('#fScope').value.trim(),
+    tags: $('#fTags').value.split(/[,،]/).map(t => t.trim()).filter(Boolean) };
+  if (!v.title || !v.code.trim()) return;
+  if (editing) Object.assign(editing, norm({ ...editing, ...v }));
+  else snippets.unshift(norm({ ...v, id: Date.now() }));
+  save(); snippetModal.close(); render();
+});
 
-            grid.innerHTML = '';
+function exportData() {
+  const b = new Blob([JSON.stringify({ schemaVersion: SCHEMA, exportedAt: new Date().toISOString(), snippets }, null, 2)], { type: 'application/json' });
+  const a = h('a'); a.href = URL.createObjectURL(b); a.download = 'devvault_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importData(ev) {
+  const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result), arr = Array.isArray(d) ? d : d.snippets;
+      if (!Array.isArray(arr)) throw 0;
+      const ok = arr.map(norm).filter(Boolean);
+      if (!ok.length) return toast('لا توجد عناصر صالحة في الملف');
+      const merge = confirm('وُجد ' + ok.length + ' عنصر صالح من ' + arr.length + '.\nموافق = دمج مع الموجود، إلغاء = متابعة للاستبدال');
+      if (!merge && !confirm('سيتم استبدال كل السكربتات الحالية. هل تريد المتابعة؟')) return;
+      const k = s => s.title + '\n' + s.code, base = merge ? snippets : [], seen = new Set(base.map(k));
+      const add = ok.filter(s => !seen.has(k(s)) && seen.add(k(s)));
+      snippets = [...base, ...add]; save(); render(); toast('تمت إضافة ' + add.length + ' عنصر');
+    } catch (e) { toast('ملف غير صالح'); }
+  };
+  r.readAsText(f);
+}
 
-            const filtered = snippets.filter(s => {
-                const matchesSearch = s.title.toLowerCase().includes(search) || s.code.toLowerCase().includes(search);
-                const matchesFilter = currentFilter === 'الكل' || s.category === currentFilter;
-                return matchesSearch && matchesFilter;
-            });
+function cidr(v) {
+  const m = v.trim().match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)\/(\d+)$/);
+  if (!m) return v.trim() ? 'صيغة غير صالحة. مثال: 192.168.1.0/24' : '';
+  const o = m.slice(1, 5).map(Number), p = +m[5];
+  if (o.some(x => x > 255) || p > 32) return 'قيمة غير صالحة';
+  const ip = ((o[0] << 24) | (o[1] << 16) | (o[2] << 8) | o[3]) >>> 0;
+  const mask = p === 0 ? 0 : (0xFFFFFFFF << (32 - p)) >>> 0, net = (ip & mask) >>> 0, bc = (net | (~mask >>> 0)) >>> 0;
+  const s = n => [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.'), small = p >= 31;
+  return 'Network:   ' + s(net) + '\nBroadcast: ' + s(bc) + '\nMask:      ' + s(mask) +
+    '\nFirst:     ' + s(small ? net : net + 1) + '\nLast:      ' + s(small ? bc : bc - 1) +
+    '\nHosts:     ' + (p === 32 ? 1 : p === 31 ? 2 : 2 ** (32 - p) - 2);
+}
+const U8 = new TextEncoder(), D8 = new TextDecoder();
+const ENC = {
+  'Base64 ترميز': t => btoa(String.fromCharCode(...U8.encode(t))),
+  'Base64 فك': t => D8.decode(Uint8Array.from(atob(t.trim()), c => c.charCodeAt(0))),
+  'URL ترميز': encodeURIComponent, 'URL فك': decodeURIComponent,
+  'Hex ترميز': t => [...U8.encode(t)].map(b => b.toString(16).padStart(2, '0')).join(''),
+  'Hex فك': t => D8.decode(Uint8Array.from((t.replace(/0x|\s/g, '').match(/../g) || []), x => parseInt(x, 16)))
+};
+Object.entries(ENC).forEach(([n, fn]) => $('#encBtns').append(btn(n, 'bs', () => {
+  try { $('#encOut').value = fn($('#encIn').value); } catch (e) { $('#encOut').value = 'تعذّر التحويل: مدخل غير صالح'; }
+})));
+['المالك', 'المجموعة', 'الآخرون'].forEach(n => {
+  const r = h('div', 'flex items-center gap-4 text-sm'); r.append(h('span', 'w-20 text-slate-400', n));
+  [['r', 4], ['w', 2], ['x', 1]].forEach(([l, v]) => {
+    const lb = h('label', 'flex items-center gap-1 font-mono'), i = h('input'); i.type = 'checkbox'; i.dataset.v = v; i.dataset.l = l; i.onchange = chmod;
+    lb.append(i, l); r.append(lb);
+  });
+  $('#chBox').append(r);
+});
+function chmod() {
+  let o = '', s = '';
+  [...$('#chBox').children].forEach(r => { let n = 0; r.querySelectorAll('input').forEach(i => { if (i.checked) { n += +i.dataset.v; s += i.dataset.l; } else s += '-'; }); o += n; });
+  $('#chOut').textContent = 'chmod ' + o + '   (' + s + ')';
+}
+chmod();
 
-            if (filtered.length === 0) {
-                grid.innerHTML = `<p class="text-slate-500 col-span-full text-center py-16">لا توجد عناصر مطابقة للبحث في هذا القسم.</p>`;
-                return;
-            }
+document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+document.addEventListener('keydown', e => {
+  const typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName);
+  if (e.ctrlKey && e.key.toLowerCase() === 'k') { e.preventDefault(); $('#searchInput').focus(); return; }
+  if (typing || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('dialog[open]')) return;
+  if (e.key === '/') { e.preventDefault(); $('#searchInput').focus(); }
+  else if (e.key.toLowerCase() === 'n') { e.preventDefault(); openModal(); }
+});
 
-            filtered.forEach(s => {
-                // تحديد لون التصنيف حسب الفئة
-                let badgeColor = 'bg-slate-800 text-slate-300';
-                if(s.category === 'Network Scanning') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-                else if(s.category === 'ADB & Android') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-                else if(s.category === 'Linux & Bash') badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
-                else if(s.category === 'Python Scripting') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-                else if(s.category === 'Exploitation & Web') badgeColor = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
-
-                grid.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between shadow-sm">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-[11px] font-mono px-2.5 py-1 rounded-md ${badgeColor}">${s.category}</span>
-                                <div class="flex gap-2.5 items-center">
-                                    <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-emerald-400 transition font-medium">نسخ</button>
-                                    <button onclick="editSnippet(${s.id})" class="text-xs text-sky-400 hover:text-sky-300 transition font-medium">تعديل</button>
-                                    <button onclick="deleteSnippet(${s.id})" class="text-xs text-rose-400 hover:text-rose-300 transition font-medium">حذف</button>
-                                </div>
-                            </div>
-                            <h3 class="font-semibold text-base mb-2.5 text-slate-100">${s.title}</h3>
-                            <pre class="bg-slate-950 p-3 rounded-lg text-xs font-mono text-emerald-300/90 overflow-x-auto dir-ltr text-left border border-slate-900"><code>${escapeHtml(s.code)}</code></pre>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function openModal(editId = null) {
-            document.getElementById('snippetModal').classList.remove('hidden');
-            document.getElementById('snippetModal').classList.add('flex');
-            
-            if (editId) {
-                document.getElementById('modalTitle').innerText = 'تعديل الأمر أو السكربت';
-                const snippet = snippets.find(s => s.id === editId);
-                if (snippet) {
-                    document.getElementById('snippetId').value = snippet.id;
-                    document.getElementById('snippetTitle').value = snippet.title;
-                    document.getElementById('snippetCategory').value = snippet.category;
-                    document.getElementById('snippetCode').value = snippet.code;
-                }
-            } else {
-                document.getElementById('modalTitle').innerText = 'إضافة أمر أو سكربت جديد';
-                document.getElementById('snippetForm').reset();
-                document.getElementById('snippetId').value = '';
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('snippetModal').classList.remove('flex');
-            document.getElementById('snippetModal').classList.add('hidden');
-            document.getElementById('snippetForm').reset();
-        }
-
-        function saveSnippet(e) {
-            e.preventDefault();
-            const id = document.getElementById('snippetId').value;
-            const title = document.getElementById('snippetTitle').value;
-            const category = document.getElementById('snippetCategory').value;
-            const code = document.getElementById('snippetCode').value;
-
-            if (id) {
-                snippets = snippets.map(s => s.id == id ? { ...s, title, category, code } : s);
-            } else {
-                const newSnippet = { id: Date.now(), title, category, code };
-                snippets.unshift(newSnippet);
-            }
-
-            saveToStorage();
-            renderTabs();
-            renderSnippets();
-            closeModal();
-        }
-
-        function editSnippet(id) {
-            openModal(id);
-        }
-
-        function deleteSnippet(id) {
-            if(confirm('هل أنت متأكد من حذف هذا الأمر؟')) {
-                snippets = snippets.filter(s => s.id !== id);
-                saveToStorage();
-                renderTabs();
-                renderSnippets();
-            }
-        }
-
-        function copyCode(btn) {
-            const code = btn.closest('div').parentElement.querySelector('code').innerText;
-            navigator.clipboard.writeText(code);
-            const originalText = btn.innerText;
-            btn.innerText = 'تم!';
-            setTimeout(() => btn.innerText = originalText, 1500);
-        }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snippets, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `devvault_sec_backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        snippets = imported;
-                        saveToStorage();
-                        renderTabs();
-                        renderSnippets();
-                        alert('تم استيراد قاعدة الأوامر بنجاح!');
-                    } else {
-                        alert('ملف غير صالح.');
-                    }
-                } catch (err) {
-                    alert('حدث خطأ أثناء قراءة الملف.');
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        // التهيئة عند التحميل
-        renderTabs();
-        renderSnippets();
-    </script>
+render();
+</script>
 </body>
 </html>
