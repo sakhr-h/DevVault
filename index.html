@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevVault | خزينة المطور</title>
+    <title>DevVault | خزينة المطور والأمن السيبراني</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
 
     <!-- الشريط العلوي -->
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                <h1 class="text-xl font-bold tracking-wide text-emerald-400">DevVault</h1>
+                <h1 class="text-xl font-bold tracking-wide text-emerald-400">DevVault <span class="text-xs text-slate-400 font-mono">Sec & Code Edition</span></h1>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="exportData()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1.5" title="تصدير النسخة الاحتياطية">
@@ -24,25 +24,23 @@
                     <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
                 </label>
                 <button onclick="openModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                    + إضافة سكربت
+                    + إضافة أمر / سكربت
                 </button>
             </div>
         </div>
     </header>
 
     <!-- المحتوى الرئيسي -->
-    <main class="max-w-6xl mx-auto px-4 py-8">
-        <!-- شريط البحث والتصنيف -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-8">
-            <input type="text" id="searchInput" placeholder="ابحث عن أمر ADB، سكربت بايثون، أو أداة..." oninput="renderSnippets()"
-                class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-            <select id="categoryFilter" onchange="renderSnippets()" class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-                <option value="all">جميع التصنيفات</option>
-                <option value="Python">Python</option>
-                <option value="Bash / Linux">Bash / Linux</option>
-                <option value="ADB & Android">ADB & Android</option>
-                <option value="أخرى">أخرى</option>
-            </select>
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- شريط البحث الفوري -->
+        <div class="mb-6">
+            <input type="text" id="searchInput" placeholder="ابحث عن أداة Nmap، أمر ADB، أو كود بايثون..." oninput="renderSnippets()"
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 shadow-inner">
+        </div>
+
+        <!-- شريط التصنيفات السريعة (الفلاتر) -->
+        <div id="categoryTabs" class="flex flex-wrap gap-2 mb-8">
+            <!-- سيتم تعبئتها ديناميكياً -->
         </div>
 
         <!-- شبكة البطاقات -->
@@ -54,27 +52,29 @@
     <!-- نافذة منبثقة للإضافة والتعديل (Modal) -->
     <div id="snippetModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-            <h2 id="modalTitle" class="text-lg font-bold text-emerald-400 mb-4">إضافة سكربت أو أمر جديد</h2>
+            <h2 id="modalTitle" class="text-lg font-bold text-emerald-400 mb-4">إضافة أمر أو سكربت جديد</h2>
             <form id="snippetForm" onsubmit="saveSnippet(event)" class="space-y-4">
                 <input type="hidden" id="snippetId">
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">عنوان السكربت</label>
-                    <input type="text" id="snippetTitle" required placeholder="مثال: فحص المنافذ المفتوحة"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">عنوان الأمر أو الوصف</label>
+                    <input type="text" id="snippetTitle" required placeholder="مثال: فحص شامل للمنافذ بـ Nmap"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">التصنيف</label>
-                    <select id="snippetCategory" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                        <option value="Python">Python</option>
-                        <option value="Bash / Linux">Bash / Linux</option>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">التصنيف التخصصي</label>
+                    <select id="snippetCategory" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                        <option value="Network Scanning">Network Scanning</option>
                         <option value="ADB & Android">ADB & Android</option>
+                        <option value="Linux & Bash">Linux & Bash</option>
+                        <option value="Python Scripting">Python Scripting</option>
+                        <option value="Exploitation & Web">Exploitation & Web</option>
                         <option value="أخرى">أخرى</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">الكود أو الأمر</label>
-                    <textarea id="snippetCode" rows="4" required placeholder="nmap -sV 192.168.1.1"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm font-mono text-left dir-ltr focus:outline-none focus:border-emerald-500"></textarea>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">الكود البرمجي أو سطر الأوامر</label>
+                    <textarea id="snippetCode" rows="4" required placeholder="nmap -sV -T4 -p- 192.168.1.1"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm font-mono text-left dir-ltr focus:outline-none focus:border-emerald-500"></textarea>
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm transition">إلغاء</button>
@@ -85,48 +85,97 @@
     </div>
 
     <script>
+        // الأقسام المعتمدة وألوانها المميزة
+        const categories = [
+            { name: 'الكل', color: 'bg-emerald-600 text-white' },
+            { name: 'Network Scanning', color: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+            { name: 'ADB & Android', color: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
+            { name: 'Linux & Bash', color: 'bg-purple-500/10 text-purple-400 border border-purple-500/20' },
+            { name: 'Python Scripting', color: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' },
+            { name: 'Exploitation & Web', color: 'bg-rose-500/10 text-rose-400 border border-rose-500/20' },
+            { name: 'أخرى', color: 'bg-slate-800 text-slate-300' }
+        ];
+
+        let currentFilter = 'الكل';
+
         let snippets = JSON.parse(localStorage.getItem('devvault_snippets')) || [
-            { id: 1, title: 'فحص المنافذ المفتوحة محلياً', category: 'Bash / Linux', code: 'nmap -sV -T4 192.168.1.1' },
-            { id: 2, title: 'تثبيت تطبيق APK عبر ADB', category: 'ADB & Android', code: 'adb install -r hammel_signed.apk' },
-            { id: 3, title: 'سيرفر HTTP سريع بلغة بايثون', category: 'Python', code: 'python3 -m http.server 8000' }
+            { id: 1, title: 'فحص الشبكة واكتشاف الخدمات بـ Nmap', category: 'Network Scanning', code: 'nmap -sV -T4 -p- 192.168.1.1' },
+            { id: 2, title: 'فرض تثبيت APK متجاوزاً القيود', category: 'ADB & Android', code: 'adb install -r -d hammel_signed.apk' },
+            { id: 3, title: 'رفع ملف APK مؤقتاً لبيئة الشاومي', category: 'ADB & Android', code: 'adb push app.apk /data/local/tmp/' },
+            { id: 4, title: 'بحث عن ملفات بصلاحيات سداسية مريبة', category: 'Linux & Bash', code: 'find / -perm -4000 2>/dev/null' },
+            { id: 5, title: 'سيرفر طوارئ سريع بلغة بايثون', category: 'Python Scripting', code: 'python3 -m http.server 80' }
         ];
 
         function saveToStorage() {
             localStorage.setItem('devvault_snippets', JSON.stringify(snippets));
         }
 
+        function renderTabs() {
+            const tabsContainer = document.getElementById('categoryTabs');
+            tabsContainer.innerHTML = '';
+
+            categories.forEach(cat => {
+                const count = cat.name === 'الكل' ? snippets.length : snippets.filter(s => s.category === cat.name).length;
+                const isActive = currentFilter === cat.name;
+                
+                const activeStyle = isActive 
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 border-transparent' 
+                    : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800';
+
+                tabsContainer.innerHTML += `
+                    <button onclick="setFilter('${cat.name}')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 ${activeStyle}">
+                        <span>${cat.name}</span>
+                        <span class="bg-black/20 px-1.5 py-0.5 rounded-full text-[10px]">${count}</span>
+                    </button>
+                `;
+            });
+        }
+
+        function setFilter(category) {
+            currentFilter = category;
+            renderTabs();
+            renderSnippets();
+        }
+
         function renderSnippets() {
             const grid = document.getElementById('snippetsGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
-            const filter = document.getElementById('categoryFilter').value;
 
             grid.innerHTML = '';
 
             const filtered = snippets.filter(s => {
                 const matchesSearch = s.title.toLowerCase().includes(search) || s.code.toLowerCase().includes(search);
-                const matchesFilter = filter === 'all' || s.category === filter;
+                const matchesFilter = currentFilter === 'الكل' || s.category === currentFilter;
                 return matchesSearch && matchesFilter;
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">لا توجد سكربتات مطابقة للبحث.</p>`;
+                grid.innerHTML = `<p class="text-slate-500 col-span-full text-center py-16">لا توجد عناصر مطابقة للبحث في هذا القسم.</p>`;
                 return;
             }
 
             filtered.forEach(s => {
+                // تحديد لون التصنيف حسب الفئة
+                let badgeColor = 'bg-slate-800 text-slate-300';
+                if(s.category === 'Network Scanning') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                else if(s.category === 'ADB & Android') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                else if(s.category === 'Linux & Bash') badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+                else if(s.category === 'Python Scripting') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                else if(s.category === 'Exploitation & Web') badgeColor = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+
                 grid.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between shadow-sm">
                         <div>
                             <div class="flex justify-between items-start mb-3">
-                                <span class="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${s.category}</span>
-                                <div class="flex gap-2 items-center">
-                                    <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-white transition">نسخ</button>
-                                    <button onclick="editSnippet(${s.id})" class="text-xs text-sky-400 hover:text-sky-300 transition">تعديل</button>
-                                    <button onclick="deleteSnippet(${s.id})" class="text-xs text-rose-400 hover:text-rose-300 transition">حذف</button>
+                                <span class="text-[11px] font-mono px-2.5 py-1 rounded-md ${badgeColor}">${s.category}</span>
+                                <div class="flex gap-2.5 items-center">
+                                    <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-emerald-400 transition font-medium">نسخ</button>
+                                    <button onclick="editSnippet(${s.id})" class="text-xs text-sky-400 hover:text-sky-300 transition font-medium">تعديل</button>
+                                    <button onclick="deleteSnippet(${s.id})" class="text-xs text-rose-400 hover:text-rose-300 transition font-medium">حذف</button>
                                 </div>
                             </div>
-                            <h3 class="font-semibold text-lg mb-2">${s.title}</h3>
-                            <pre class="bg-slate-950 p-3 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto dir-ltr text-left"><code>${escapeHtml(s.code)}</code></pre>
+                            <h3 class="font-semibold text-base mb-2.5 text-slate-100">${s.title}</h3>
+                            <pre class="bg-slate-950 p-3 rounded-lg text-xs font-mono text-emerald-300/90 overflow-x-auto dir-ltr text-left border border-slate-900"><code>${escapeHtml(s.code)}</code></pre>
                         </div>
                     </div>
                 `;
@@ -138,7 +187,7 @@
             document.getElementById('snippetModal').classList.add('flex');
             
             if (editId) {
-                document.getElementById('modalTitle').innerText = 'تعديل السكربت';
+                document.getElementById('modalTitle').innerText = 'تعديل الأمر أو السكربت';
                 const snippet = snippets.find(s => s.id === editId);
                 if (snippet) {
                     document.getElementById('snippetId').value = snippet.id;
@@ -147,7 +196,7 @@
                     document.getElementById('snippetCode').value = snippet.code;
                 }
             } else {
-                document.getElementById('modalTitle').innerText = 'إضافة سكربت أو أمر جديد';
+                document.getElementById('modalTitle').innerText = 'إضافة أمر أو سكربت جديد';
                 document.getElementById('snippetForm').reset();
                 document.getElementById('snippetId').value = '';
             }
@@ -167,15 +216,14 @@
             const code = document.getElementById('snippetCode').value;
 
             if (id) {
-                // تحديث سكربت موجود
                 snippets = snippets.map(s => s.id == id ? { ...s, title, category, code } : s);
             } else {
-                // إضافة سكربت جديد
                 const newSnippet = { id: Date.now(), title, category, code };
                 snippets.unshift(newSnippet);
             }
 
             saveToStorage();
+            renderTabs();
             renderSnippets();
             closeModal();
         }
@@ -185,9 +233,10 @@
         }
 
         function deleteSnippet(id) {
-            if(confirm('هل أنت متأكد من حذف هذا السكربت؟')) {
+            if(confirm('هل أنت متأكد من حذف هذا الأمر؟')) {
                 snippets = snippets.filter(s => s.id !== id);
                 saveToStorage();
+                renderTabs();
                 renderSnippets();
             }
         }
@@ -204,7 +253,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snippets, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `devvault_backup_${new Date().toISOString().slice(0,10)}.json`);
+            downloadAnchor.setAttribute("download", `devvault_sec_backup_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -220,8 +269,9 @@
                     if (Array.isArray(imported)) {
                         snippets = imported;
                         saveToStorage();
+                        renderTabs();
                         renderSnippets();
-                        alert('تم استيراد السكربتات بنجاح!');
+                        alert('تم استيراد قاعدة الأوامر بنجاح!');
                     } else {
                         alert('ملف غير صالح.');
                     }
@@ -237,6 +287,8 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
+        // التهيئة عند التحميل
+        renderTabs();
         renderSnippets();
     </script>
 </body>
