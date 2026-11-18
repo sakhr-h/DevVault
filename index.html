@@ -16,7 +16,6 @@
                 <h1 class="text-xl font-bold tracking-wide text-emerald-400">DevVault</h1>
             </div>
             <div class="flex items-center gap-2">
-                <!-- أزرار التصدير والاستيراد الجديده -->
                 <button onclick="exportData()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1.5" title="تصدير النسخة الاحتياطية">
                     📤 تصدير
                 </button>
@@ -52,11 +51,12 @@
         </div>
     </main>
 
-    <!-- نافذة منبثقة لإضافة سكربت جديد (Modal) -->
+    <!-- نافذة منبثقة للإضافة والتعديل (Modal) -->
     <div id="snippetModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-            <h2 class="text-lg font-bold text-emerald-400 mb-4">إضافة سكربت أو أمر جديد</h2>
+            <h2 id="modalTitle" class="text-lg font-bold text-emerald-400 mb-4">إضافة سكربت أو أمر جديد</h2>
             <form id="snippetForm" onsubmit="saveSnippet(event)" class="space-y-4">
+                <input type="hidden" id="snippetId">
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">عنوان السكربت</label>
                     <input type="text" id="snippetTitle" required placeholder="مثال: فحص المنافذ المفتوحة"
@@ -85,7 +85,6 @@
     </div>
 
     <script>
-        // البيانات الافتراضية إذا كانت الخزينة فارغة
         let snippets = JSON.parse(localStorage.getItem('devvault_snippets')) || [
             { id: 1, title: 'فحص المنافذ المفتوحة محلياً', category: 'Bash / Linux', code: 'nmap -sV -T4 192.168.1.1' },
             { id: 2, title: 'تثبيت تطبيق APK عبر ADB', category: 'ADB & Android', code: 'adb install -r hammel_signed.apk' },
@@ -120,8 +119,9 @@
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <span class="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${s.category}</span>
-                                <div class="flex gap-2">
+                                <div class="flex gap-2 items-center">
                                     <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-white transition">نسخ</button>
+                                    <button onclick="editSnippet(${s.id})" class="text-xs text-sky-400 hover:text-sky-300 transition">تعديل</button>
                                     <button onclick="deleteSnippet(${s.id})" class="text-xs text-rose-400 hover:text-rose-300 transition">حذف</button>
                                 </div>
                             </div>
@@ -133,9 +133,24 @@
             });
         }
 
-        function openModal() {
+        function openModal(editId = null) {
             document.getElementById('snippetModal').classList.remove('hidden');
             document.getElementById('snippetModal').classList.add('flex');
+            
+            if (editId) {
+                document.getElementById('modalTitle').innerText = 'تعديل السكربت';
+                const snippet = snippets.find(s => s.id === editId);
+                if (snippet) {
+                    document.getElementById('snippetId').value = snippet.id;
+                    document.getElementById('snippetTitle').value = snippet.title;
+                    document.getElementById('snippetCategory').value = snippet.category;
+                    document.getElementById('snippetCode').value = snippet.code;
+                }
+            } else {
+                document.getElementById('modalTitle').innerText = 'إضافة سكربت أو أمر جديد';
+                document.getElementById('snippetForm').reset();
+                document.getElementById('snippetId').value = '';
+            }
         }
 
         function closeModal() {
@@ -146,16 +161,27 @@
 
         function saveSnippet(e) {
             e.preventDefault();
-            const newSnippet = {
-                id: Date.now(),
-                title: document.getElementById('snippetTitle').value,
-                category: document.getElementById('snippetCategory').value,
-                code: document.getElementById('snippetCode').value
-            };
-            snippets.unshift(newSnippet);
+            const id = document.getElementById('snippetId').value;
+            const title = document.getElementById('snippetTitle').value;
+            const category = document.getElementById('snippetCategory').value;
+            const code = document.getElementById('snippetCode').value;
+
+            if (id) {
+                // تحديث سكربت موجود
+                snippets = snippets.map(s => s.id == id ? { ...s, title, category, code } : s);
+            } else {
+                // إضافة سكربت جديد
+                const newSnippet = { id: Date.now(), title, category, code };
+                snippets.unshift(newSnippet);
+            }
+
             saveToStorage();
             renderSnippets();
             closeModal();
+        }
+
+        function editSnippet(id) {
+            openModal(id);
         }
 
         function deleteSnippet(id) {
@@ -174,7 +200,6 @@
             setTimeout(() => btn.innerText = originalText, 1500);
         }
 
-        // ميزة التصدير إلى ملف JSON
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snippets, null, 2));
             const downloadAnchor = document.createElement('a');
@@ -185,7 +210,6 @@
             downloadAnchor.remove();
         }
 
-        // ميزة الاستيراد من ملف JSON
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -206,14 +230,13 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // إعادة تعيين الحقل
+            event.target.value = '';
         }
 
         function escapeHtml(text) {
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        // تشغيل العرض عند تحميل الصفحة
         renderSnippets();
     </script>
 </body>
