@@ -19,12 +19,20 @@ const LIST = [
   { id: 'network-defenses', n: '06', title: 'DNS, MITM & Network Poisoning Defenses', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Network Defense', desc: 'Recognize name-resolution and traffic-manipulation risks and strengthen defenses.', keywords: 'dns mitm poisoning arp dhcp' },
   { id: 'scanning', n: '07', title: 'Network Scanning, Zenmap & Metasploit', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Assessment', desc: 'Interpret authorized inventory results and understand framework governance.', keywords: 'zenmap metasploit nmap inventory' },
   { id: 'wireless', n: '08', title: 'Wireless Security', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Wireless', desc: 'Wi-Fi security, configuration risks, monitoring, and response.', keywords: 'wireless wifi wpa' },
-  { id: 'wireshark', n: '09', title: 'Wireshark & Traffic Analysis', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Traffic Analysis', desc: 'Read packet captures, use display filters, and identify defensive signals.', keywords: 'wireshark pcap tcp dns' }
+  { id: 'wireshark', n: '09', title: 'Wireshark & Traffic Analysis', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Traffic Analysis', desc: 'Read packet captures, use display filters, and identify defensive signals.', keywords: 'wireshark pcap tcp dns' },
+  { id: 'web-scanning', n: '10', title: 'Web Vulnerability Scanning & Remediation', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Safely assess owned web apps, understand common findings, and fix code and configuration.', keywords: 'web vulnerability scanning remediation' },
+  { id: 'http-web-security', n: '11', title: 'Web Application Security & HTTP Fundamentals', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Understand requests and responses, browser trust boundaries, headers, and sessions.', keywords: 'web application security http fundamentals' },
+  { id: 'html-fundamentals', n: '12', title: 'HTML5 Fundamentals & Semantic Structure', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Read and write accessible page structure, forms, labels, and clean HTML.', keywords: 'html5 fundamentals semantic structure' },
+  { id: 'javascript-fundamentals', n: '13', title: 'JavaScript Fundamentals for Web & Security', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Learn variables, functions, events, and safe DOM handling.', keywords: 'javascript fundamentals for web security' },
+  { id: 'python-fundamentals', n: '14', title: 'Python Fundamentals & Automation', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Write small, understandable Python programs for local files and structured data.', keywords: 'python fundamentals automation' },
+  { id: 'network-logs', n: '15', title: 'Network Traffic & Log Analysis Basics', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Build baselines, read common log fields, and investigate unusual patterns.', keywords: 'network traffic log analysis basics' },
+  { id: 'endpoint-linux-hardening', n: '16', title: 'Endpoint & Linux Hardening Fundamentals', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Reduce attack surface with least privilege, minimal services, and secure defaults.', keywords: 'endpoint linux hardening fundamentals' },
+  { id: 'incident-response-hunting', n: '17', title: 'Incident Response & Threat Hunting Basics', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Prepare, investigate hypotheses, preserve evidence, and document actions.', keywords: 'incident response threat hunting basics' }
 ];
 const TOTAL = {};
 const P = () => R(PK, {});
 const doneSet = c => (P()[c] || {}).done || {};
-const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (c === 'bettercap' ? 9 : 6)));
+const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (c === 'bettercap' ? 9 : 7)));
 const setDone = (c, s, v) => { const p = P(); const d = (p[c] = p[c] || {}).done = p[c].done || {}; v ? d[s] = 1 : delete d[s]; W(PK, p); };
 
 let tt, te;
