@@ -48,8 +48,8 @@ D.forEach((d,i)=>{
  const quiz=quizBank[d.id]||d.quiz||[];
  const overview=[['p',d.learn],['h','LAB ONLY — Defensive learning'],['warn','Authorized scope only',['Use course concepts only in an isolated lab or systems covered by written authorization. No attack execution or live targets are part of this course.'],'يرجى تطبيق المفاهيم داخل مختبر معزول أو أنظمة يشملها تصريح مكتوب فقط.']];
  const sections=[
- mkSection('practice','Practice','Safe practical exercise',[['ol',d.practice||['Confirm scope and baseline.','Work with approved lab material.','Record observations and a defensive next step.']]].concat((d.snippets||[]).map(x=>['cmd',x]))),
  mkSection('overview','Overview','Course overview',overview),
+ mkSection('practice','Practice','Safe practical exercise',[['ol',d.practice||['Confirm scope and baseline.','Work with approved lab material.','Record observations and a defensive next step.']]].concat((d.snippets||[]).map(x=>['cmd',x]))),
  mkSection('concepts','Core concepts','Core concepts',[['p',d.learn],['ul',[d.risks,d.detect,d.mitigate]]]),
  mkSection('threat-model','Threat mechanics','Threat mechanics and trust boundaries',[['p',d.risks],['h','What defenders should know'],['ul',[d.detect,d.mitigate]]]),
  mkSection('detection','Detection','Detection and investigation',[['p',d.detect],['ol',['Establish authorized scope and a known-good baseline.','Collect only the minimum evidence needed.','Record timestamps, source, and confidence.','Corroborate with independent logs or asset owners.','Escalate through the approved incident process.']]]),
