@@ -56,7 +56,7 @@ D.forEach((d,i)=>{
  mkSection('mitigation','Mitigation','Mitigation and safe operations',[['p',d.mitigate],['h','Defensive checklist'],['ul',['Use least privilege and keep systems updated.','Document ownership, scope, and stop conditions.','Protect notes and captured data with access controls and retention limits.','Review relevant official documentation before operational changes.']]]),
  mkSection('quiz','Review & quiz','Knowledge check',[['h','Official references'],['refs',d.refs.map((u,j)=>['Reference '+(j+1),u])],['h','Interactive quiz'],['quiz']])
  ];
- const category=({osint:'OSINT',beef:'Browser Security','file-threats':'Threat Analysis',kali:'Linux','network-defenses':'Network Defense',scanning:'Assessment',wireless:'Wireless',wireshark:'Traffic Analysis'})[d.id]; || 'Security & Development';
+ const category=({osint:'OSINT',beef:'Browser Security','file-threats':'Threat Analysis',kali:'Linux','network-defenses':'Network Defense',scanning:'Assessment',wireless:'Wireless',wireshark:'Traffic Analysis'}[d.id] || 'Security & Development');
  window.COURSES[d.id]={num:d.num,title:d.title,level:'Beginner',category,duration:'35–55 minutes',desc:d.desc,ar:'يركّز هذا الدرس على الفهم والتحليل الدفاعي ضمن نطاق مصرح به فقط. لا تختبر أنظمة أو شبكات دون تصريح مكتوب.',sections,quiz};
 });
 })();
