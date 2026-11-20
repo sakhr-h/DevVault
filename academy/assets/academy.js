@@ -60,7 +60,7 @@ function hdr() {
    <a href="index.html" class="flex items-center gap-2 font-bold text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>DevVault <span class="text-slate-400 font-normal">Cybersecurity Academy</span></a>
    <nav class="flex items-center gap-2 text-sm">
     <details class="relative"><summary class="cursor-pointer list-none px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700">Courses ▾</summary>
-     <div class="absolute end-0 mt-2 w-64 rounded-xl border border-slate-800 bg-slate-900 p-1 shadow-xl">${menu}</div></details>
+     <div class="absolute end-0 mt-2 w-64 max-h-[75vh] overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-1 shadow-xl">${menu}</div></details>
     <button id="arBtn" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"></button>
     <a href="../index.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100">← DevVault</a>
    </nav></div>`;
