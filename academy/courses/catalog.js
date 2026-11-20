@@ -4,20 +4,48 @@ const mkSection=(id,short,title,items)=>({id,short,title,items});
 window.COURSES=window.COURSES||{};
 D.forEach((d,i)=>{
  const refs=d.refs.map((u,j)=>['Official reference '+(j+1),u]);
- const quiz=d.id==='beef'?[
-  {q:'What does this course emphasize about BeEF?',o:['Browser security concepts and defensive understanding','Deploying browser hooks','Collecting credentials','Launching commands in browsers'],a:0,e:'The course stays at a conceptual and defensive level.'},
-  {q:'Which control helps limit which scripts a page may load?',o:['Content Security Policy','A larger screen','A different file extension','A public Wi-Fi network'],a:0,e:'CSP lets a site define trusted content sources and can reduce some script injection risks.'},
-  {q:'What should defenders do after suspected session exposure?',o:['Follow incident response, preserve evidence, and revoke affected sessions','Publish session data','Ignore it','Disable all browser updates'],a:0,e:'Containment and investigation should follow the organization’s response plan.'}
- ]:d.id==='wireshark'?[
-  {q:'What does a display filter do?',o:['Limits which captured packets are shown','Changes packets on the network','Encrypts a capture','Deletes the source capture'],a:0,e:'Wireshark display filters change the visible packet set, not the underlying capture.'},
-  {q:'Why protect PCAP files?',o:['They may contain sensitive content and metadata','They are always encrypted','They cannot identify users','They are executable programs'],a:0,e:'Capture data can expose sensitive communications and context.'},
-  {q:'What is a good analysis practice?',o:['Use narrow authorized captures and corroborate observations','Capture every network indefinitely','Assume one packet proves compromise','Share raw traces publicly'],a:0,e:'Scope and corroboration help keep analysis accurate and proportionate.'}
- ]:[
-  {q:'Which approach best fits this course?',o:['Stay within written scope and focus on understanding and defense','Test a public target to see what happens','Collect all available personal data','Run an unreviewed tool on a production system'],a:0,e:'Authorized scope, careful analysis, and defensive learning reduce harm.'},
-  {q:'What is the strongest first response to a suspicious finding?',o:['Preserve relevant evidence and follow the approved reporting process','Share raw data publicly','Repeat activity against more systems','Delete all logs immediately'],a:0,e:'Preserve context and use established reporting and response processes.'},
-  {q:'Why should findings be treated cautiously?',o:['Observations may be incomplete and need validation','One observation always proves compromise','Tools never make mistakes','Encryption removes all metadata'],a:0,e:'Validate evidence with independent sources and record uncertainty.'}
- ];
- const overview=[['p',d.learn],['h','LAB ONLY — Defensive learning'],['warn','Authorized scope only',['Use course concepts only in an isolated lab or systems covered by written authorization. No attack execution or live targets are part of this course.'],d.ar]];
+ const quizBank={
+ osint:[
+  {q:'How should an OSINT finding be documented?',o:['Record source, access date, and confidence','Keep only a screenshot without context','Treat the first result as verified','Collect unrelated personal details'],a:0,e:'Source provenance, timing, and confidence let others assess the finding and reduce privacy exposure.'},
+  {q:'A public profile contains information about a private person. What is the best next step?',o:['Minimize collection and check scope and purpose','Aggregate every detail available','Share it to validate the data','Use a private account to bypass access limits'],a:0,e:'Public availability does not remove privacy and minimization obligations.'},
+  {q:'Two sources repeat the same claim. What should you check?',o:['Whether they rely on an independent primary source','Whether their headlines match','Which site has more ads','Whether the claim is newer'],a:0,e:'Repeated claims may share one origin; trace provenance and seek independent primary evidence.'}
+ ],
+ beef:[
+  {q:'Which browser control can restrict trusted script sources?',o:['Content Security Policy','DHCP reservation','A packet capture filter','An image checksum'],a:0,e:'CSP defines allowed content sources and can mitigate some injection risks.'},
+  {q:'What does a browser trust boundary describe?',o:['Limits on what a page or origin may access','A Wi-Fi signal range','A DNS cache lifetime','A file compression format'],a:0,e:'Origin and browser security policies constrain page access to data and capabilities.'},
+  {q:'After suspected browser session exposure, defenders should:',o:['Preserve evidence, revoke affected sessions, and investigate','Export browser cookies for review','Ignore it if HTTPS was used','Disable browser updates'],a:0,e:'HTTPS does not prevent every client-side compromise; follow the incident process.'}
+ ],
+ 'file-threats':[
+  {q:'Why is a file extension alone insufficient to establish file safety?',o:['Names can be misleading and parsers can have flaws','Extensions encrypt the content','Images cannot contain metadata','All files are signed'],a:0,e:'Verify provenance and file type with trusted tools; file viewers and parsers also need updates.'},
+  {q:'What is a safe first response to an unexpected attachment?',o:['Verify the sender through a known channel and report it','Open it on a production device','Rename it and preview it','Forward it to coworkers'],a:0,e:'Verify context out-of-band and use your organization’s reporting process.'},
+  {q:'Before sharing an image publicly, consider:',o:['Removing unnecessary metadata and personal details','Embedding executable content','Renaming the extension','Disabling endpoint protection'],a:0,e:'Image metadata can disclose location, device, or other identifying information.'}
+ ],
+ kali:[
+  {q:'Where should Kali installation images be obtained?',o:['Kali’s official download sources with checksum verification','A random file-sharing link','An unverified mirror from a forum','An attachment from email'],a:0,e:'Kali recommends official downloads and verifying published SHA256 checksums.'},
+  {q:'What is the safer default for routine system work?',o:['Use least privilege and elevate only when needed','Run every application as root','Disable package signature checks','Install packages from arbitrary repositories'],a:0,e:'Least privilege limits the impact of mistakes and compromised processes.'},
+  {q:'Why isolate a Kali virtual machine?',o:['To reduce unintended exposure to the host and other networks','To bypass network authorization','To make passwords unnecessary','To disable logging'],a:0,e:'Use an isolated lab network and snapshots so exercises stay controlled and recoverable.'}
+ ],
+ 'network-defenses':[
+  {q:'What does DNSSEC primarily add?',o:['Data origin authentication and integrity for DNS data','Encryption for all web traffic','A replacement for TLS certificates','A private Wi-Fi channel'],a:0,e:'DNSSEC provides authenticated DNS data; it does not encrypt queries.'},
+  {q:'What is one limitation of encrypted DNS transport?',o:['It does not by itself prove a destination is trustworthy','It removes the need for resolver security','It prevents every phishing attack','It hides all endpoint metadata'],a:0,e:'Encryption protects the query in transit to a resolver but does not alone establish that a domain is benign.'},
+  {q:'A workstation suddenly uses an unknown resolver. What is an appropriate response?',o:['Compare with managed configuration and investigate the change','Assume the new resolver is safe','Delete all endpoint logs','Disable certificate validation'],a:0,e:'Validate resolver settings against known-good policy and correlate with endpoint and network evidence.'}
+ ],
+ scanning:[
+  {q:'What does Zenmap provide?',o:['A graphical interface for Nmap with saved and comparable results','A replacement for written authorization','An automatic patching service','A packet encryption protocol'],a:0,e:'Zenmap is Nmap’s official GUI and supports profiles and comparison of saved scans.'},
+  {q:'Why can service banners be misleading?',o:['They may be incomplete, altered, or out of date','They always prove a vulnerability','They include cryptographic proof','They cannot be changed by administrators'],a:0,e:'Validate observations with owners, asset records, and approved follow-up.'},
+  {q:'Before any assessment scan, define:',o:['Written scope, timing, exclusions, contacts, and stop conditions','Only a target list from the internet','A payload and callback address','A way to suppress alerts'],a:0,e:'A written authorization and safety plan prevent scope creep and help avoid disruption.'}
+ ],
+ wireless:[
+  {q:'Which practice improves guest Wi-Fi security?',o:['Isolate guests from internal services','Reuse the internal admin password','Disable AP updates','Hide the SSID as the only control'],a:0,e:'Guest isolation limits lateral access; hiding an SSID is not a substitute for authentication and segmentation.'},
+  {q:'Which observation can indicate a rogue access point?',o:['An unknown BSSID that is absent from the authorized inventory','A stronger signal from an approved AP','A DHCP lease renewal','A changed browser theme'],a:0,e:'Compare wireless observations with the managed AP inventory and approved change records.'},
+  {q:'What should an organization do with AP firmware?',o:['Keep it updated and review configuration changes','Disable updates permanently','Use default credentials','Expose management interfaces publicly'],a:0,e:'Vendor updates and controlled management reduce known risks.'}
+ ],
+ wireshark:[
+  {q:'What does a Wireshark display filter change?',o:['Which packets are shown, not the saved capture itself','The packets on the network','The encryption used by an application','The source capture file'],a:0,e:'Display filters affect the visible packet list; they do not alter the underlying capture.'},
+  {q:'Why restrict access to PCAP files?',o:['They may contain sensitive data and communication metadata','They are always anonymous','They cannot include credentials','They are executable by default'],a:0,e:'Treat captures as sensitive evidence and apply access, retention, and sharing controls.'},
+  {q:'What is a sound analysis practice?',o:['Corroborate packet observations with endpoint and server logs','Assume one packet proves compromise','Capture all interfaces indefinitely','Publish the raw trace'],a:0,e:'Context and corroborating evidence help prevent false conclusions.'}
+ ]};
+ const quiz=quizBank[d.id]||[];
  const sections=[
  mkSection('overview','Overview','Course overview',overview),
  mkSection('concepts','Core concepts','Core concepts',[['p',d.learn],['ul',[d.risks,d.detect,d.mitigate]]]),
