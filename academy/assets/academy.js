@@ -11,16 +11,20 @@ const W = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch 
 const PK = 'acad_progress_v1', AK = 'acad_ar';
 
 const LIST = [
-  { id: 'bettercap', n: '01', title: 'Bettercap', live: true, level: 'Beginner', dur: '45–60 min', cat: 'Network Security',
-    desc: 'Bettercap Fundamentals & Passive Network Reconnaissance' },
-  { n: '02', title: 'Kali Linux Commands' }, { n: '03', title: 'DNS Spoofing' }, { n: '04', title: 'MITM Attacks' },
-  { n: '05', title: 'Network Poisoning' }, { n: '06', title: 'Network Scanning' }, { n: '07', title: 'Wireless Security' },
-  { n: '08', title: 'Wireshark' }, { n: '09', title: 'Zenmap & Metasploit' }
+  { id: 'bettercap', n: '01', title: 'Bettercap', live: true, level: 'Beginner', dur: '45–60 min', cat: 'Network Security', desc: 'Bettercap Fundamentals & Passive Network Reconnaissance', keywords: 'passive recon arp monitoring' },
+  { id: 'osint', n: '02', title: 'OSINT Fundamentals & Passive Information Gathering', live: true, level: 'Beginner', dur: '35–45 min', cat: 'OSINT', desc: 'Ethical passive research, source evaluation, privacy, and documentation.', keywords: 'osint passive privacy' },
+  { id: 'beef', n: '03', title: 'BeEF Architecture & Browser Security Concepts', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Browser Security', desc: 'Browser trust boundaries, architecture, detection, and defenses.', keywords: 'beef browser architecture' },
+  { id: 'file-threats', n: '04', title: 'File & Image-Based Threat Mechanics', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Threat Analysis', desc: 'Risky file delivery, safe inspection, and containment.', keywords: 'file image metadata malware' },
+  { id: 'kali', n: '05', title: 'Kali Linux Fundamentals', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Linux', desc: 'Navigate Kali safely, manage packages, permissions, and lab hygiene.', keywords: 'kali linux terminal' },
+  { id: 'network-defenses', n: '06', title: 'DNS, MITM & Network Poisoning Defenses', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Network Defense', desc: 'Recognize name-resolution and traffic-manipulation risks and strengthen defenses.', keywords: 'dns mitm poisoning arp dhcp' },
+  { id: 'scanning', n: '07', title: 'Network Scanning, Zenmap & Metasploit', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Assessment', desc: 'Interpret authorized inventory results and understand framework governance.', keywords: 'zenmap metasploit nmap inventory' },
+  { id: 'wireless', n: '08', title: 'Wireless Security', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Wireless', desc: 'Wi-Fi security, configuration risks, monitoring, and response.', keywords: 'wireless wifi wpa' },
+  { id: 'wireshark', n: '09', title: 'Wireshark & Traffic Analysis', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Traffic Analysis', desc: 'Read packet captures, use display filters, and identify defensive signals.', keywords: 'wireshark pcap tcp dns' }
 ];
-const TOTAL = { bettercap: 9 };
+const TOTAL = {};
 const P = () => R(PK, {});
 const doneSet = c => (P()[c] || {}).done || {};
-const pct = c => Math.round(100 * Object.keys(doneSet(c)).length / (TOTAL[c] || 1));
+const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (LIST.find(x => x.id === c)?.sectionCount || 5)));
 const setDone = (c, s, v) => { const p = P(); const d = (p[c] = p[c] || {}).done = p[c].done || {}; v ? d[s] = 1 : delete d[s]; W(PK, p); };
 
 let tt, te;
