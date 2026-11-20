@@ -47,9 +47,7 @@ const list = (tag, arr) => { const e = h(tag, 'space-y-1.5 text-slate-300 leadin
 
 function hdr() {
   const e = h('header', 'sticky top-0 z-20 border-b border-slate-800 bg-slate-900/70 backdrop-blur-md');
-  const menu = LIST.map(c => c.live
-    ? `<a class="block px-3 py-2 rounded hover:bg-slate-800" href="course.html?c=${c.id}">${c.n} · ${c.title}</a>`
-    : `<span class="block px-3 py-2 text-slate-500">${c.n} · ${c.title} <span class="text-[10px]">(soon)</span></span>`).join('');
+  const menu = LIST.map(c => `<a class="block px-3 py-2 rounded hover:bg-slate-800" href="course.html?c=${c.id}">${c.n} · ${c.title}</a>`).join('');
   e.innerHTML = `<div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
    <a href="index.html" class="flex items-center gap-2 font-bold text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>DevVault <span class="text-slate-400 font-normal">Cybersecurity Academy</span></a>
    <nav class="flex items-center gap-2 text-sm">
@@ -62,19 +60,25 @@ function hdr() {
 }
 
 function hub() {
-  const g = $('#cards');
-  LIST.forEach(c => {
-    const el = h(c.live ? 'a' : 'div', 'rounded-2xl border p-5 flex flex-col gap-3 ' + (c.live ? 'border-slate-800 bg-slate-900 hover:border-emerald-500/60 transition' : 'border-slate-800/60 bg-slate-900/40 opacity-60'));
-    if (c.live) el.href = 'course.html?c=' + c.id;
-    el.append(h('span', 'font-mono text-xs text-emerald-400', 'COURSE ' + c.n), h('h2', 'text-lg font-semibold text-slate-100', c.title));
-    if (c.live) {
+  const g = $('#cards'), search = $('#courseSearch');
+  const draw = () => {
+    const q = search.value.trim().toLowerCase();
+    g.replaceChildren();
+    const matches = LIST.filter(c => [c.title,c.desc,c.cat,c.keywords].join(' ').toLowerCase().includes(q));
+    matches.forEach(c => {
+      const el = h('a', 'rounded-2xl border p-5 flex flex-col gap-3 border-slate-800 bg-slate-900 hover:border-emerald-500/60 transition');
+      el.href = 'course.html?c=' + c.id;
+      el.append(h('span', 'font-mono text-xs text-emerald-400', 'COURSE ' + c.n), h('h2', 'text-lg font-semibold text-slate-100', c.title));
       const ch = h('div', 'flex flex-wrap gap-2');
       [c.level, c.cat, c.dur].forEach(x => ch.append(h('span', 'text-xs rounded-md border border-slate-700 text-slate-300 px-2 py-0.5', x)));
       const p = pct(c.id);
       el.append(h('p', 'text-sm text-slate-400', c.desc), ch, bar(p), h('span', 'text-xs text-slate-400', p + '% complete'));
-    } else el.append(h('p', 'text-sm text-slate-500', 'Coming soon'));
-    g.append(el);
-  });
+      g.append(el);
+    });
+    if (!matches.length) g.append(h('p','text-slate-500 py-8','No courses match your search.'));
+  };
+  search.addEventListener('input', draw);
+  draw();
 }
 
 const BADGE = { no: ['NO ROOT', 'emerald'], yes: ['ROOT REQUIRED', 'rose'], s: ['IN BETTERCAP SESSION', 'sky'], none: ['NO NETWORK IMPACT', 'emerald'], pm: ['PASSIVE MONITORING', 'amber'], lab: ['LAB ONLY', 'rose'] };
@@ -210,7 +214,7 @@ function build(C, cid) {
 function course() {
   const id = new URLSearchParams(location.search).get('c'), app = $('#app');
   if (!LIST.some(c => c.live && c.id === id)) { app.append(h('p', 'text-slate-400 py-20 text-center', 'Course not found. Choose a course from the Academy home.')); return; }
-  const s = h('script'); s.src = 'courses/' + id + '.js';
+  const s = h('script'); s.src = id === 'bettercap' ? 'courses/bettercap.js' : 'courses/catalog.js';
   s.onload = () => build(window.COURSES[id], id); s.onerror = () => { app.textContent = 'Could not load the course.'; };
   document.head.append(s);
 }
