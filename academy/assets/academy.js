@@ -11,16 +11,28 @@ const W = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch 
 const PK = 'acad_progress_v1', AK = 'acad_ar';
 
 const LIST = [
-  { id: 'bettercap', n: '01', title: 'Bettercap', live: true, level: 'Beginner', dur: '45–60 min', cat: 'Network Security',
-    desc: 'Bettercap Fundamentals & Passive Network Reconnaissance' },
-  { n: '02', title: 'Kali Linux Commands' }, { n: '03', title: 'DNS Spoofing' }, { n: '04', title: 'MITM Attacks' },
-  { n: '05', title: 'Network Poisoning' }, { n: '06', title: 'Network Scanning' }, { n: '07', title: 'Wireless Security' },
-  { n: '08', title: 'Wireshark' }, { n: '09', title: 'Zenmap & Metasploit' }
+  { id: 'bettercap', n: '01', title: 'Bettercap', live: true, level: 'Beginner', dur: '45–60 min', cat: 'Network Security', desc: 'Bettercap Fundamentals & Passive Network Reconnaissance', keywords: 'passive recon arp monitoring' },
+  { id: 'osint', n: '02', title: 'OSINT Fundamentals & Passive Information Gathering', live: true, level: 'Beginner', dur: '35–45 min', cat: 'OSINT', desc: 'Ethical passive research, source evaluation, privacy, and documentation.', keywords: 'osint passive privacy' },
+  { id: 'beef', n: '03', title: 'BeEF Architecture & Browser Security Concepts', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Browser Security', desc: 'Browser trust boundaries, architecture, detection, and defenses.', keywords: 'beef browser architecture' },
+  { id: 'file-threats', n: '04', title: 'File & Image-Based Threat Mechanics', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Threat Analysis', desc: 'Risky file delivery, safe inspection, and containment.', keywords: 'file image metadata malware' },
+  { id: 'kali', n: '05', title: 'Kali Linux Fundamentals', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Linux', desc: 'Navigate Kali safely, manage packages, permissions, and lab hygiene.', keywords: 'kali linux terminal' },
+  { id: 'network-defenses', n: '06', title: 'DNS, MITM & Network Poisoning Defenses', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Network Defense', desc: 'Recognize name-resolution and traffic-manipulation risks and strengthen defenses.', keywords: 'dns mitm poisoning arp dhcp' },
+  { id: 'scanning', n: '07', title: 'Network Scanning, Zenmap & Metasploit', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Assessment', desc: 'Interpret authorized inventory results and understand framework governance.', keywords: 'zenmap metasploit nmap inventory' },
+  { id: 'wireless', n: '08', title: 'Wireless Security', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Wireless', desc: 'Wi-Fi security, configuration risks, monitoring, and response.', keywords: 'wireless wifi wpa' },
+  { id: 'wireshark', n: '09', title: 'Wireshark & Traffic Analysis', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Traffic Analysis', desc: 'Read packet captures, use display filters, and identify defensive signals.', keywords: 'wireshark pcap tcp dns' },
+  { id: 'web-scanning', n: '10', title: 'Web Vulnerability Scanning & Remediation', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Safely assess owned web apps, understand common findings, and fix code and configuration.', keywords: 'xss sql injection web vulnerability scanning remediation security headers input validation' },
+  { id: 'http-web-security', n: '11', title: 'Web Application Security & HTTP Fundamentals', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Understand requests and responses, browser trust boundaries, headers, and sessions.', keywords: 'http requests responses csp cors hsts cookies sessions headers' },
+  { id: 'html-fundamentals', n: '12', title: 'HTML5 Fundamentals & Semantic Structure', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Read and write accessible page structure, forms, labels, and clean HTML.', keywords: 'html5 html semantic structure forms labels accessibility' },
+  { id: 'javascript-fundamentals', n: '13', title: 'JavaScript Fundamentals for Web & Security', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Learn variables, functions, events, and safe DOM handling.', keywords: 'javascript dom variables functions events textcontent innerhtml input security' },
+  { id: 'python-fundamentals', n: '14', title: 'Python Fundamentals & Automation', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Write small, understandable Python programs for local files and structured data.', keywords: 'python automation pathlib files json csv scripts' },
+  { id: 'network-logs', n: '15', title: 'Network Traffic & Log Analysis Basics', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Build baselines, read common log fields, and investigate unusual patterns.', keywords: 'network traffic logs baselines anomalies dns proxy firewall' },
+  { id: 'endpoint-linux-hardening', n: '16', title: 'Endpoint & Linux Hardening Fundamentals', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Reduce attack surface with least privilege, minimal services, and secure defaults.', keywords: 'endpoint linux hardening permissions services packages least privilege' },
+  { id: 'incident-response-hunting', n: '17', title: 'Incident Response & Threat Hunting Basics', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Prepare, investigate hypotheses, preserve evidence, and document actions.', keywords: 'incident response threat hunting evidence containment recovery timeline' }
 ];
-const TOTAL = { bettercap: 9 };
+const TOTAL = {};
 const P = () => R(PK, {});
 const doneSet = c => (P()[c] || {}).done || {};
-const pct = c => Math.round(100 * Object.keys(doneSet(c)).length / (TOTAL[c] || 1));
+const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (c === 'bettercap' ? 9 : 7)));
 const setDone = (c, s, v) => { const p = P(); const d = (p[c] = p[c] || {}).done = p[c].done || {}; v ? d[s] = 1 : delete d[s]; W(PK, p); };
 
 let tt, te;
@@ -43,14 +55,12 @@ const list = (tag, arr) => { const e = h(tag, 'space-y-1.5 text-slate-300 leadin
 
 function hdr() {
   const e = h('header', 'sticky top-0 z-20 border-b border-slate-800 bg-slate-900/70 backdrop-blur-md');
-  const menu = LIST.map(c => c.live
-    ? `<a class="block px-3 py-2 rounded hover:bg-slate-800" href="course.html?c=${c.id}">${c.n} · ${c.title}</a>`
-    : `<span class="block px-3 py-2 text-slate-500">${c.n} · ${c.title} <span class="text-[10px]">(soon)</span></span>`).join('');
+  const menu = LIST.map(c => `<a class="block px-3 py-2 rounded hover:bg-slate-800" href="course.html?c=${c.id}">${c.n} · ${c.title}</a>`).join('');
   e.innerHTML = `<div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
    <a href="index.html" class="flex items-center gap-2 font-bold text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>DevVault <span class="text-slate-400 font-normal">Cybersecurity Academy</span></a>
    <nav class="flex items-center gap-2 text-sm">
     <details class="relative"><summary class="cursor-pointer list-none px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700">Courses ▾</summary>
-     <div class="absolute end-0 mt-2 w-64 rounded-xl border border-slate-800 bg-slate-900 p-1 shadow-xl">${menu}</div></details>
+     <div class="absolute end-0 mt-2 w-64 max-h-[75vh] overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-1 shadow-xl">${menu}</div></details>
     <button id="arBtn" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"></button>
     <a href="../index.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100">← DevVault</a>
    </nav></div>`;
@@ -58,19 +68,25 @@ function hdr() {
 }
 
 function hub() {
-  const g = $('#cards');
-  LIST.forEach(c => {
-    const el = h(c.live ? 'a' : 'div', 'rounded-2xl border p-5 flex flex-col gap-3 ' + (c.live ? 'border-slate-800 bg-slate-900 hover:border-emerald-500/60 transition' : 'border-slate-800/60 bg-slate-900/40 opacity-60'));
-    if (c.live) el.href = 'course.html?c=' + c.id;
-    el.append(h('span', 'font-mono text-xs text-emerald-400', 'COURSE ' + c.n), h('h2', 'text-lg font-semibold text-slate-100', c.title));
-    if (c.live) {
+  const g = $('#cards'), search = $('#courseSearch');
+  const draw = () => {
+    const q = search.value.trim().toLowerCase();
+    g.replaceChildren();
+    const matches = LIST.filter(c => [c.title,c.desc,c.cat,c.keywords].join(' ').toLowerCase().includes(q));
+    matches.forEach(c => {
+      const el = h('a', 'rounded-2xl border p-5 flex flex-col gap-3 border-slate-800 bg-slate-900 hover:border-emerald-500/60 transition');
+      el.href = 'course.html?c=' + c.id;
+      el.append(h('span', 'font-mono text-xs text-emerald-400', 'COURSE ' + c.n), h('h2', 'text-lg font-semibold text-slate-100', c.title));
       const ch = h('div', 'flex flex-wrap gap-2');
       [c.level, c.cat, c.dur].forEach(x => ch.append(h('span', 'text-xs rounded-md border border-slate-700 text-slate-300 px-2 py-0.5', x)));
       const p = pct(c.id);
       el.append(h('p', 'text-sm text-slate-400', c.desc), ch, bar(p), h('span', 'text-xs text-slate-400', p + '% complete'));
-    } else el.append(h('p', 'text-sm text-slate-500', 'Coming soon'));
-    g.append(el);
-  });
+      g.append(el);
+    });
+    if (!matches.length) g.append(h('p','text-slate-500 py-8','No courses match your search.'));
+  };
+  search.addEventListener('input', draw);
+  draw();
 }
 
 const BADGE = { no: ['NO ROOT', 'emerald'], yes: ['ROOT REQUIRED', 'rose'], s: ['IN BETTERCAP SESSION', 'sky'], none: ['NO NETWORK IMPACT', 'emerald'], pm: ['PASSIVE MONITORING', 'amber'], lab: ['LAB ONLY', 'rose'] };
@@ -206,7 +222,7 @@ function build(C, cid) {
 function course() {
   const id = new URLSearchParams(location.search).get('c'), app = $('#app');
   if (!LIST.some(c => c.live && c.id === id)) { app.append(h('p', 'text-slate-400 py-20 text-center', 'Course not found. Choose a course from the Academy home.')); return; }
-  const s = h('script'); s.src = 'courses/' + id + '.js';
+  const s = h('script'); s.src = id === 'bettercap' ? 'courses/bettercap.js' : 'courses/catalog.js';
   s.onload = () => build(window.COURSES[id], id); s.onerror = () => { app.textContent = 'Could not load the course.'; };
   document.head.append(s);
 }
