@@ -46,6 +46,7 @@ D.forEach((d,i)=>{
   {q:'What is a sound analysis practice?',o:['Corroborate packet observations with endpoint and server logs','Assume one packet proves compromise','Capture all interfaces indefinitely','Publish the raw trace'],a:0,e:'Context and corroborating evidence help prevent false conclusions.'}
  ]};
  const quiz=quizBank[d.id]||[];
+ const overview=[['p',d.learn],['h','LAB ONLY — Defensive learning'],['warn','Authorized scope only',['Use course concepts only in an isolated lab or systems covered by written authorization. No attack execution or live targets are part of this course.'],'يرجى تطبيق المفاهيم داخل مختبر معزول أو أنظمة يشملها تصريح مكتوب فقط.']];
  const sections=[
  mkSection('overview','Overview','Course overview',overview),
  mkSection('concepts','Core concepts','Core concepts',[['p',d.learn],['ul',[d.risks,d.detect,d.mitigate]]]),
