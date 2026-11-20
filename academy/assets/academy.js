@@ -24,7 +24,7 @@ const LIST = [
 const TOTAL = {};
 const P = () => R(PK, {});
 const doneSet = c => (P()[c] || {}).done || {};
-const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (LIST.find(x => x.id === c)?.sectionCount || 5)));
+const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (c === 'bettercap' ? 9 : 6)));
 const setDone = (c, s, v) => { const p = P(); const d = (p[c] = p[c] || {}).done = p[c].done || {}; v ? d[s] = 1 : delete d[s]; W(PK, p); };
 
 let tt, te;
