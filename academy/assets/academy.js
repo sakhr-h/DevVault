@@ -1,234 +1,45 @@
 (() => {
-const $ = (s, r = document) => r.querySelector(s);
-const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
-const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const rich = s => esc(s)
-  .replace(/`([^`]+)`/g, '<code class="font-mono text-[0.85em] bg-slate-800 text-emerald-300 px-1.5 py-0.5 rounded" dir="ltr">$1</code>')
-  .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-slate-100">$1</strong>')
-  .replace(/\[\[([^\]]+)\]\]/g, '<span class="ar text-emerald-300/90" dir="rtl" lang="ar">($1)</span>');
-const R = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
-const W = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const PK = 'acad_progress_v1', AK = 'acad_ar';
-
-const LIST = [
-  { id: 'bettercap', n: '01', title: 'Bettercap', live: true, level: 'Beginner', dur: '45–60 min', cat: 'Network Security', desc: 'Bettercap Fundamentals & Passive Network Reconnaissance', keywords: 'passive recon arp monitoring' },
-  { id: 'osint', n: '02', title: 'OSINT Fundamentals & Passive Information Gathering', live: true, level: 'Beginner', dur: '35–45 min', cat: 'OSINT', desc: 'Ethical passive research, source evaluation, privacy, and documentation.', keywords: 'osint passive privacy' },
-  { id: 'beef', n: '03', title: 'BeEF Architecture & Browser Security Concepts', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Browser Security', desc: 'Browser trust boundaries, architecture, detection, and defenses.', keywords: 'beef browser architecture' },
-  { id: 'file-threats', n: '04', title: 'File & Image-Based Threat Mechanics', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Threat Analysis', desc: 'Risky file delivery, safe inspection, and containment.', keywords: 'file image metadata malware' },
-  { id: 'kali', n: '05', title: 'Kali Linux Fundamentals', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Linux', desc: 'Navigate Kali safely, manage packages, permissions, and lab hygiene.', keywords: 'kali linux terminal' },
-  { id: 'network-defenses', n: '06', title: 'DNS, MITM & Network Poisoning Defenses', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Network Defense', desc: 'Recognize name-resolution and traffic-manipulation risks and strengthen defenses.', keywords: 'dns mitm poisoning arp dhcp' },
-  { id: 'scanning', n: '07', title: 'Network Scanning, Zenmap & Metasploit', live: true, level: 'Beginner', dur: '45–55 min', cat: 'Assessment', desc: 'Interpret authorized inventory results and understand framework governance.', keywords: 'zenmap metasploit nmap inventory' },
-  { id: 'wireless', n: '08', title: 'Wireless Security', live: true, level: 'Beginner', dur: '35–45 min', cat: 'Wireless', desc: 'Wi-Fi security, configuration risks, monitoring, and response.', keywords: 'wireless wifi wpa' },
-  { id: 'wireshark', n: '09', title: 'Wireshark & Traffic Analysis', live: true, level: 'Beginner', dur: '40–50 min', cat: 'Traffic Analysis', desc: 'Read packet captures, use display filters, and identify defensive signals.', keywords: 'wireshark pcap tcp dns' },
-  { id: 'web-scanning', n: '10', title: 'Web Vulnerability Scanning & Remediation', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Safely assess owned web apps, understand common findings, and fix code and configuration.', keywords: 'xss sql injection web vulnerability scanning remediation security headers input validation' },
-  { id: 'http-web-security', n: '11', title: 'Web Application Security & HTTP Fundamentals', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Understand requests and responses, browser trust boundaries, headers, and sessions.', keywords: 'http requests responses csp cors hsts cookies sessions headers' },
-  { id: 'html-fundamentals', n: '12', title: 'HTML5 Fundamentals & Semantic Structure', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Read and write accessible page structure, forms, labels, and clean HTML.', keywords: 'html5 html semantic structure forms labels accessibility' },
-  { id: 'javascript-fundamentals', n: '13', title: 'JavaScript Fundamentals for Web & Security', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Learn variables, functions, events, and safe DOM handling.', keywords: 'javascript dom variables functions events textcontent innerhtml input security' },
-  { id: 'python-fundamentals', n: '14', title: 'Python Fundamentals & Automation', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Write small, understandable Python programs for local files and structured data.', keywords: 'python automation pathlib files json csv scripts' },
-  { id: 'network-logs', n: '15', title: 'Network Traffic & Log Analysis Basics', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Build baselines, read common log fields, and investigate unusual patterns.', keywords: 'network traffic logs baselines anomalies dns proxy firewall' },
-  { id: 'endpoint-linux-hardening', n: '16', title: 'Endpoint & Linux Hardening Fundamentals', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Reduce attack surface with least privilege, minimal services, and secure defaults.', keywords: 'endpoint linux hardening permissions services packages least privilege' },
-  { id: 'incident-response-hunting', n: '17', title: 'Incident Response & Threat Hunting Basics', live: true, level: 'Beginner', dur: '40–55 min', cat: 'Security & Development', desc: 'Prepare, investigate hypotheses, preserve evidence, and document actions.', keywords: 'incident response threat hunting evidence containment recovery timeline' }
-];
-const TOTAL = {};
-const P = () => R(PK, {});
-const doneSet = c => (P()[c] || {}).done || {};
-const pct = c => Math.min(100, Math.round(100 * Object.keys(doneSet(c)).length / (c === 'bettercap' ? 9 : 7)));
-const setDone = (c, s, v) => { const p = P(); const d = (p[c] = p[c] || {}).done = p[c].done || {}; v ? d[s] = 1 : delete d[s]; W(PK, p); };
-
-let tt, te;
-const toast = m => {
-  if (!te) { te = h('div', 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-slate-700 text-sm rounded-lg px-4 py-2.5 transition-opacity'); te.setAttribute('role', 'status'); document.body.append(te); }
-  te.textContent = m; te.style.opacity = 1; clearTimeout(tt); tt = setTimeout(() => te.style.opacity = 0, 1800);
-};
-async function clip(t) {
-  try { await navigator.clipboard.writeText(t); }
-  catch (e) { const a = h('textarea'); a.value = t; document.body.append(a); a.select(); document.execCommand('copy'); a.remove(); }
+'use strict';
+const C=window.AcademyCurriculum,S=window.AcademyState,A=window.AcademyAssessments;
+const $=(q,r=document)=>r.querySelector(q),$$=(q,r=document)=>[...r.querySelectorAll(q)];
+const el=(tag,cls,text)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x;};
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const rich=s=>esc(s).replace(/`([^`]+)`/g,'<code class="font-mono text-[.85em] bg-slate-800 text-emerald-300 px-1.5 py-.5 rounded" dir="ltr">$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong class="text-slate-100">$1</strong>').replace(/\[\[([^\]]+)\]\]/g,'<span class="ar text-emerald-300" dir="rtl" lang="ar">($1)</span>');
+const para=(text,cls='text-slate-300 leading-7')=>{const p=el('p',cls);p.innerHTML=rich(text);return p;};
+const ar=text=>{const d=el('div','ar arbox rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-100/90 text-sm leading-7 px-4 py-2.5 my-3');d.dir='rtl';d.lang='ar';d.textContent=text;return d;};
+const list=(tag,items)=>{const x=el(tag,'space-y-1.5 text-slate-300 leading-7 ps-6 '+(tag==='ol'?'list-decimal':'list-disc'));items.forEach(v=>{const li=el('li');li.innerHTML=rich(v);x.append(li);});return x;};
+const pill=(text,kind='slate')=>el('span',`inline-flex text-xs rounded-full border px-2.5 py-1 border-${kind}-500/30 bg-${kind}-500/10 text-${kind}-200`,text);
+const bar=p=>{const o=el('div','h-1.5 rounded bg-slate-800 overflow-hidden'),i=el('div','h-full bg-emerald-500 transition-all');i.style.width=Math.max(0,Math.min(100,p))+'%';o.append(i);return o;};
+const link=(href,text,cls='text-slate-300 hover:text-emerald-400')=>{const a=el('a',cls,text);a.href=href;return a;};
+let toastTimer,toastEl;function toast(msg){if(!toastEl){toastEl=el('div','fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm shadow-xl');document.body.append(toastEl);}toastEl.textContent=msg;toastEl.style.opacity='1';clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.style.opacity='0',1800);}
+function applyArabic(){const on=S.preference('arabicHints')!==false;document.documentElement.classList.toggle('noar',!on);const b=$('#arBtn');if(b){b.textContent='Arabic hints: '+(on?'ON':'OFF');b.setAttribute('aria-pressed',String(on));}}
+function statusPill(status){const color={Locked:'slate','In Progress':'sky','Gate Ready':'amber','Retry Required':'rose',Mastered:'emerald'}[status]||'slate';return pill(status,color);}
+function header(){
+  const h=el('header','sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 backdrop-blur');
+  const groups=C.stages.map(st=>`<div class="px-3 pt-2 text-[10px] uppercase tracking-wider text-slate-500">Stage ${st.number} · ${esc(st.title)}</div>${st.courses.map(id=>{const c=C.byId[id];return `<a class="block px-3 py-2 rounded hover:bg-slate-800" href="course.html?c=${encodeURIComponent(id)}">${c.num} · ${esc(c.title)}</a>`}).join('')}`).join('');
+  h.innerHTML=`<div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3"><a href="index.html" class="flex items-center gap-2 font-bold text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>DevVault <span class="text-slate-400 font-normal">Cybersecurity Academy</span></a><nav class="flex flex-wrap items-center gap-2 text-sm"><a href="mistakes.html" class="px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800">My Mistakes</a><details class="relative"><summary class="cursor-pointer list-none px-3 py-1.5 rounded-lg bg-slate-800">Courses ▾</summary><div class="absolute end-0 mt-2 w-80 max-h-[75vh] overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-1 shadow-xl">${groups}</div></details><button id="arBtn" class="px-3 py-1.5 rounded-lg border border-slate-700"></button><a href="../index.html" class="px-3 py-1.5 text-slate-400 hover:text-white">← DevVault</a></nav></div>`;
+  return h;
 }
-const applyAR = () => {
-  const on = R(AK, true); document.documentElement.classList.toggle('noar', !on);
-  const b = $('#arBtn'); if (b) { b.textContent = 'Arabic hints: ' + (on ? 'ON' : 'OFF'); b.setAttribute('aria-pressed', on); }
-};
-const bar = p => { const o = h('div', 'h-1.5 rounded bg-slate-800 overflow-hidden'); const i = h('div', 'h-full bg-emerald-500 transition-all'); i.style.width = p + '%'; o.append(i); return o; };
-const para = (t, c = 'text-slate-300 leading-7') => { const e = h('p', c); e.innerHTML = rich(t); return e; };
-const arnote = t => { const e = h('div', 'ar arbox rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-100/90 text-sm leading-7 px-4 py-2.5 my-3'); e.dir = 'rtl'; e.append(h('strong', 'ms-2', 'بالعربي:'), document.createTextNode(t)); return e; };
-const list = (tag, arr) => { const e = h(tag, 'space-y-1.5 text-slate-300 leading-7 ps-6 ' + (tag === 'ul' ? 'list-disc' : 'list-decimal')); arr.forEach(x => { const l = h('li'); l.innerHTML = rich(x); e.append(l); }); return e; };
-
-function hdr() {
-  const e = h('header', 'sticky top-0 z-20 border-b border-slate-800 bg-slate-900/70 backdrop-blur-md');
-  const menu = LIST.map(c => `<a class="block px-3 py-2 rounded hover:bg-slate-800" href="course.html?c=${c.id}">${c.n} · ${c.title}</a>`).join('');
-  e.innerHTML = `<div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-   <a href="index.html" class="flex items-center gap-2 font-bold text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>DevVault <span class="text-slate-400 font-normal">Cybersecurity Academy</span></a>
-   <nav class="flex items-center gap-2 text-sm">
-    <details class="relative"><summary class="cursor-pointer list-none px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700">Courses ▾</summary>
-     <div class="absolute end-0 mt-2 w-64 max-h-[75vh] overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-1 shadow-xl">${menu}</div></details>
-    <button id="arBtn" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"></button>
-    <a href="../index.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100">← DevVault</a>
-   </nav></div>`;
-  return e;
+function installHeader(){const old=$('#hdr');if(old)old.replaceWith(header());$('#arBtn')?.addEventListener('click',()=>{S.preference('arabicHints',!(S.preference('arabicHints')!==false));applyArabic();});applyArabic();}
+function stageStatus(st){if(st.number===5){if(!S.stageUnlocked(5))return'Locked';if(S.isMastered('track-a')&&S.isMastered('track-b'))return'Mastered';if(S.targetReady('track-a')||S.targetReady('track-b'))return'Gate Ready';return'In Progress';}return S.targetStatus(st.id);}
+function assessmentSummary(target){const latest=S.latestAttempt(target),best=S.bestAttempt(target);if(!latest)return'No gate attempts yet.';return `Latest ${latest.overall.toFixed(0)}% · Best ${best.overall.toFixed(0)}% · ${S.attempts(target).length} attempt${S.attempts(target).length===1?'':'s'}`;}
+function hub(){
+  const roadmap=$('#roadmap'),cards=$('#cards'),search=$('#courseSearch'),stageFilter=$('#stageFilter'),trackFilter=$('#trackFilter'),catFilter=$('#categoryFilter');
+  $('#courseCount').textContent=C.courses.length;
+  C.stages.forEach(st=>{const box=el('section','rounded-2xl border border-slate-800 bg-slate-900/70 p-5'),status=stageStatus(st),top=el('div','flex flex-wrap items-start justify-between gap-3'),heading=el('div');heading.append(el('p','font-mono text-xs text-emerald-400',`STAGE ${st.number}`),el('h2','text-xl font-semibold',st.title));top.append(heading,statusPill(status));box.append(top,ar(st.ar),el('p','text-sm text-slate-400 mt-3',`${st.courses.length} courses · ${st.number===0?'Unlocked by default':st.number===5?'Two independent specialization gates':assessmentSummary(st.id)}`));const actions=el('div','flex flex-wrap gap-2 mt-4');if(st.number===5){C.tracks.forEach(t=>{const a=link(`gate.html?target=${t.id}`,`${t.title} · ${S.targetStatus(t.id)}`,'rounded-lg border border-slate-700 px-3 py-2 text-sm hover:border-emerald-500');actions.append(a);});}else actions.append(link(`gate.html?target=${st.id}`,'Open stage gate','rounded-lg border border-slate-700 px-3 py-2 text-sm hover:border-emerald-500'));box.append(actions);roadmap.append(box);});
+  [...new Set(C.courses.map(c=>c.category))].sort().forEach(v=>catFilter.append(new Option(v,v)));
+  const draw=()=>{const q=search.value.trim().toLowerCase(),sf=stageFilter.value,tf=trackFilter.value,cf=catFilter.value;cards.replaceChildren();const matches=C.courses.filter(c=>`${c.title} ${c.description} ${c.category} ${c.keywords}`.toLowerCase().includes(q)).filter(c=>!sf||String(c.stage)===sf).filter(c=>!tf||c.track===tf).filter(c=>!cf||c.category===cf);matches.forEach(c=>{const access=S.courseAccess(c.id),p=S.courseProgress(c.id),a=link(`course.html?c=${encodeURIComponent(c.id)}`,'','rounded-2xl border p-5 flex flex-col gap-3 bg-slate-900 transition '+(access.unlocked?'border-slate-800 hover:border-emerald-500/60':'border-slate-800 opacity-70')),top=el('div','flex items-center justify-between gap-2');top.append(el('span','font-mono text-xs text-emerald-400',`COURSE ${c.num}`),pill(access.unlocked?`Stage ${c.stage}`:'Locked',access.unlocked?'sky':'slate'));a.append(top,el('h3','text-lg font-semibold',c.title),para(c.description,'text-sm text-slate-400 leading-6'));const tags=el('div','flex flex-wrap gap-2');[c.level,c.category,c.duration].forEach(v=>tags.append(pill(v)));a.append(tags,bar(p.percent),el('span','text-xs text-slate-400',p.total?`${p.percent}% · ${p.completed}/${p.total} activities · quiz best ${Math.round(p.quizBest)}%`:'Open once to initialize activity progress'));if(!access.unlocked)a.append(el('p','text-xs text-amber-300',access.reason));cards.append(a);});if(!matches.length)cards.append(el('p','text-slate-500 py-8','No courses match these filters.'));};
+  [search,stageFilter,trackFilter,catFilter].forEach(x=>x.addEventListener(x===search?'input':'change',draw));draw();
 }
-
-function hub() {
-  const g = $('#cards'), search = $('#courseSearch');
-  const draw = () => {
-    const q = search.value.trim().toLowerCase();
-    g.replaceChildren();
-    const matches = LIST.filter(c => [c.title,c.desc,c.cat,c.keywords].join(' ').toLowerCase().includes(q));
-    matches.forEach(c => {
-      const el = h('a', 'rounded-2xl border p-5 flex flex-col gap-3 border-slate-800 bg-slate-900 hover:border-emerald-500/60 transition');
-      el.href = 'course.html?c=' + c.id;
-      el.append(h('span', 'font-mono text-xs text-emerald-400', 'COURSE ' + c.n), h('h2', 'text-lg font-semibold text-slate-100', c.title));
-      const ch = h('div', 'flex flex-wrap gap-2');
-      [c.level, c.cat, c.dur].forEach(x => ch.append(h('span', 'text-xs rounded-md border border-slate-700 text-slate-300 px-2 py-0.5', x)));
-      const p = pct(c.id);
-      el.append(h('p', 'text-sm text-slate-400', c.desc), ch, bar(p), h('span', 'text-xs text-slate-400', p + '% complete'));
-      g.append(el);
-    });
-    if (!matches.length) g.append(h('p','text-slate-500 py-8','No courses match your search.'));
-  };
-  search.addEventListener('input', draw);
-  draw();
-}
-
-const BADGE = { no: ['NO ROOT', 'emerald'], yes: ['ROOT REQUIRED', 'rose'], s: ['IN BETTERCAP SESSION', 'sky'], none: ['NO NETWORK IMPACT', 'emerald'], pm: ['PASSIVE MONITORING', 'amber'], lab: ['LAB ONLY', 'rose'] };
-const COL = { emerald: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30', rose: 'bg-rose-500/10 text-rose-300 border-rose-500/30', sky: 'bg-sky-500/10 text-sky-300 border-sky-500/30', amber: 'bg-amber-500/10 text-amber-300 border-amber-500/30' };
-const badge = k => { const [t, c] = BADGE[k]; return h('span', 'text-[10px] font-semibold tracking-wide border rounded px-2 py-0.5 ' + COL[c], t); };
-const LANG = { bash: 'Bash', bettercap: 'Bettercap console', caplet: 'Bettercap Caplet' };
-const TOOL = { bash: 'Terminal · Kali Linux', bettercap: 'Bettercap', caplet: 'Bettercap' };
-const WARN = 'LAB ONLY: this command starts a network monitoring session.\n\nRun it only on an isolated lab network or on systems you own or have explicit permission to test.\n\nمخصص للمختبر والشبكات المصرح بها فقط.\n\nCopy this command?';
-
-function paint(code, lang) {
-  const pre = h('pre', 'bg-slate-950 px-4 py-3 overflow-x-auto text-[13px] leading-6 font-mono text-left'); pre.dir = 'ltr';
-  const c = h('code'); pre.append(c);
-  if (lang === 'bash') { c.className = 'language-bash'; c.textContent = code; try { hljs.highlightElement(c); } catch (e) {} }
-  else code.split('\n').forEach((ln, i, a) => {
-    const m = ln.match(/^(\s*)(\S+)(.*)$/);
-    if (m) { c.append(m[1], h('span', 'text-emerald-300', m[2])); m[3].split(/(<[^>]+>)/).forEach(p => c.append(/^<.*>$/.test(p) ? h('span', 'text-amber-300', p) : p)); } else c.append(ln);
-    if (i < a.length - 1) c.append('\n');
-  });
-  return pre;
-}
-const row = (l, t) => { const d = h('div', 'text-sm text-slate-300 leading-6'); d.append(h('span', 'font-semibold text-slate-100 me-1.5', l + ':')); const s = h('span'); s.innerHTML = rich(t); d.append(s); return d; };
-
-function cmd(o) {
-  const w = h('div', 'rounded-xl border border-slate-800 bg-slate-900 overflow-hidden my-5');
-  const top = h('div', 'flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-800');
-  const l = h('div'); l.append(h('div', 'font-medium text-slate-100 text-sm', o.name), h('div', 'text-xs text-slate-400 mt-0.5', 'Tool: ' + TOOL[o.lang] + '  ·  Language: ' + LANG[o.lang]));
-  const acts = h('div', 'flex gap-2');
-  const pre = paint(o.code, o.lang);
-  const bt = (t, f) => { const b = h('button', 'text-xs rounded-md border border-slate-700 px-2.5 py-1 text-slate-200 hover:bg-slate-800', t); b.type = 'button'; b.onclick = () => f(b); return b; };
-  acts.append(
-    bt('Hide code', b => { pre.classList.toggle('hidden'); b.textContent = pre.classList.contains('hidden') ? 'Show code' : 'Hide code'; }),
-    bt('Copy', b => { if (o.lab && !confirm(WARN)) return; clip(o.code); b.textContent = 'Copied ✓'; toast('Command copied'); setTimeout(() => b.textContent = 'Copy', 1500); }));
-  top.append(l, acts);
-  const bd = h('div', 'flex flex-wrap gap-1.5 px-4 pt-3');
-  [o.root, o.ik, o.lab && 'lab'].filter(Boolean).forEach(k => bd.append(badge(k)));
-  w.append(top);
-  if (bd.children.length) w.append(bd);
-  if (o.lab) w.append(h('div', 'mx-4 mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-200', '⚠ Affects network activity. Run only on an isolated or authorized lab network.'));
-  const body = h('div', 'px-4 py-3 space-y-1');
-  w.append(h('div', 'mt-3'), pre, body);
-  if (o.why) body.append(row(o.wl || 'Explanation', o.why));
-  if (o.imp) body.append(row('Network impact', o.imp));
-  if (o.exp) body.append(row('Expected result', o.exp));
-  if (o.ar) body.append(arnote(o.ar));
-  return w;
-}
-
-function quiz(C, cid, after) {
-  const box = h('div', 'rounded-xl border border-slate-800 bg-slate-900 p-5 mt-4'); let i = 0, sc = 0;
-  const draw = () => {
-    box.replaceChildren();
-    if (i >= C.quiz.length) {
-      const p = P(); const best = Math.max(sc, (p[cid] || {}).best || 0); (p[cid] = p[cid] || {}).best = best; W(PK, p);
-      setDone(cid, 'quiz', true); after();
-      const b = h('button', 'px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium', 'Retake quiz'); b.onclick = () => { i = 0; sc = 0; draw(); };
-      box.append(h('h3', 'text-xl font-semibold text-slate-100', 'Your score: ' + sc + ' / ' + C.quiz.length), h('p', 'text-slate-400 my-2', 'Best score: ' + best + ' / ' + C.quiz.length), b); return;
-    }
-    const q = C.quiz[i], fb = h('div'), t = h('p', 'text-slate-100 font-medium mb-3'); t.innerHTML = rich(q.q);
-    box.append(h('p', 'text-xs text-slate-400 mb-2', 'Question ' + (i + 1) + ' of ' + C.quiz.length), t);
-    const btns = q.o.map((o, k) => {
-      const b = h('button', 'block w-full text-start rounded-lg border border-slate-700 px-4 py-2.5 mb-2 text-sm text-slate-200 hover:border-emerald-500/60');
-      b.innerHTML = '<span class="font-mono text-slate-400 me-2">' + 'ABCD'[k] + '.</span>' + rich(o);
-      b.onclick = () => {
-        btns.forEach((x, j) => { x.disabled = true; x.classList.remove('border-slate-700', 'hover:border-emerald-500/60'); x.classList.add(j === q.a ? 'border-emerald-500' : j === k ? 'border-rose-500' : 'border-slate-800'); if (j === q.a) x.classList.add('bg-emerald-500/10'); else if (j === k) x.classList.add('bg-rose-500/10'); });
-        if (k === q.a) sc++;
-        const nx = h('button', 'mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium', i + 1 < C.quiz.length ? 'Next question' : 'See score'); nx.onclick = () => { i++; draw(); };
-        fb.append(h('p', 'text-sm mt-2 font-medium ' + (k === q.a ? 'text-emerald-300' : 'text-rose-300'), k === q.a ? 'Correct.' : 'Not quite. The correct answer is ' + 'ABCD'[q.a] + '.'), para(q.e, 'text-sm text-slate-300 leading-6 mt-1'), nx);
-      };
-      box.append(b); return b;
-    });
-    box.append(fb);
-  };
-  draw(); return box;
-}
-
-function item(it, C, cid, after) {
-  switch (it[0]) {
-    case 'p': return para(it[1]);
-    case 'h': return h('h3', 'text-lg font-semibold text-slate-100 mt-7 mb-2', it[1]);
-    case 'ul': return list('ul', it[1]);
-    case 'ol': return list('ol', it[1]);
-    case 'ar': return arnote(it[1]);
-    case 'cmd': return cmd(it[1]);
-    case 'warn': { const d = h('div', 'rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 my-4'); d.append(h('div', 'font-semibold text-amber-300 mb-1', '⚠ ' + it[1])); it[2].forEach(t => d.append(para(t, 'text-amber-100/90 leading-7'))); if (it[3]) d.append(arnote(it[3])); return d; }
-    case 'prob': { const o = it[1], d = h('div', 'rounded-xl border border-slate-800 bg-slate-900 p-4 my-4'); d.append(h('h3', 'font-semibold text-slate-100 mb-2', o.t), row('Possible cause', o.cause), row('Solution', o.fix)); if (o.cmd) d.append(cmd(o.cmd)); return d; }
-    case 'refs': { const d = h('ul', 'list-disc ps-6 text-slate-300 space-y-1'); it[1].forEach(([t, u]) => { const l = h('li'), a = h('a', 'text-emerald-400 hover:underline', t); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; l.append(a); d.append(l); }); return d; }
-    case 'quiz': return quiz(C, cid, after);
-  }
-}
-
-function build(C, cid) {
-  document.title = C.title + ' | DevVault Academy';
-  const app = $('#app'), secs = C.sections; let cur;
-  const hero = h('section', 'mb-8 max-w-3xl');
-  const chips = h('div', 'flex flex-wrap gap-2 my-3'); [C.level, C.category, C.duration].forEach(x => chips.append(h('span', 'text-xs rounded-md border border-slate-700 text-slate-300 px-2.5 py-1', x)));
-  hero.append(h('p', 'font-mono text-xs text-emerald-400', 'COURSE ' + C.num), h('h1', 'text-3xl font-bold mt-1', C.title), chips, para(C.desc), arnote(C.ar));
-  const side = h('aside', 'lg:sticky lg:top-20 self-start space-y-4'), main = h('div', 'min-w-0');
-  const pl = h('div', 'text-sm text-slate-300'), pb = bar(0), res = h('div', 'space-y-2 text-sm'), nav = h('nav', 'space-y-1'), nb = {};
-  const search = h('input', 'w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-sm focus:outline-none focus:border-emerald-500'); search.type = 'search'; search.placeholder = 'Search lessons…'; search.setAttribute('aria-label', 'Search lessons');
-  secs.forEach(s => { const a = h('a', 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800'); a.href = '#' + s.id; const ck = h('span', 'w-4 text-emerald-400'); a.append(ck, h('span', '', s.short)); a._ck = ck; nb[s.id] = a; nav.append(a); });
-  side.append(pl, pb, search, res, nav);
-  const refresh = () => {
-    const d = doneSet(cid), n = secs.filter(s => d[s.id]).length, p = Math.round(100 * n / secs.length);
-    pl.textContent = 'Progress: ' + p + '% (' + n + ' of ' + secs.length + ' complete)'; pb.firstChild.style.width = p + '%';
-    secs.forEach(s => { nb[s.id]._ck.textContent = d[s.id] ? '✓' : ''; nb[s.id].classList.toggle('bg-slate-800', cur === s.id); });
-  };
-  const show = id => {
-    const i = Math.max(0, secs.findIndex(s => s.id === id)), s = secs[i]; cur = s.id; main.replaceChildren();
-    main.append(h('h2', 'text-2xl font-semibold text-slate-100 mb-4', s.title));
-    const after = () => { refresh(); const c = main.querySelector('input[type=checkbox]'); if (c) c.checked = true; };
-    s.items.forEach(it => { const e = item(it, C, cid, after); if (e) main.append(e); });
-    const lab = h('label', 'flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 mt-8 cursor-pointer');
-    const cb = h('input', 'h-4 w-4 accent-emerald-500'); cb.type = 'checkbox'; cb.checked = !!doneSet(cid)[s.id]; cb.onchange = () => { setDone(cid, s.id, cb.checked); refresh(); };
-    lab.append(cb, h('span', 'text-sm text-slate-200', 'Mark this lesson as complete')); main.append(lab);
-    const nv = h('div', 'flex justify-between mt-4 text-sm');
-    const lk = (t, j) => { const a = h('a', 'text-slate-300 hover:text-emerald-400', t); a.href = '#' + secs[j].id; return a; };
-    nv.append(i > 0 ? lk('← ' + secs[i - 1].short, i - 1) : h('span'), i < secs.length - 1 ? lk(secs[i + 1].short + ' →', i + 1) : h('span')); main.append(nv);
-    refresh(); window.scrollTo({ top: 0 });
-  };
-  const txt = v => typeof v === 'string' ? v : Array.isArray(v) ? v.map(txt).join(' ') : v && typeof v === 'object' ? Object.values(v).map(txt).join(' ') : '';
-  search.oninput = () => {
-    const q = search.value.trim().toLowerCase(); res.replaceChildren(); if (q.length < 2) return;
-    const hits = secs.map(s => ({ s, t: txt([s.title, s.items]).replace(/[`*]|\[\[|\]\]/g, '') })).filter(x => x.t.toLowerCase().includes(q));
-    if (!hits.length) { res.append(h('p', 'text-slate-500 px-1', 'No results.')); return; }
-    hits.forEach(({ s, t }) => { const k = t.toLowerCase().indexOf(q), a = h('a', 'block rounded-lg border border-slate-800 px-3 py-2 hover:border-emerald-500/60'); a.href = '#' + s.id; a.append(h('div', 'text-slate-100', s.short), h('div', 'text-xs text-slate-400 mt-0.5', '…' + t.slice(Math.max(0, k - 30), k + 60).replace(/\s+/g, ' ') + '…')); res.append(a); });
-  };
-  const grid = h('div', 'grid lg:grid-cols-[17rem_minmax(0,1fr)] gap-8'); grid.append(side, main);
-  app.replaceChildren(hero, grid);
-  addEventListener('hashchange', () => show(location.hash.slice(1)));
-  show(location.hash.slice(1));
-}
-
-function course() {
-  const id = new URLSearchParams(location.search).get('c'), app = $('#app');
-  if (!LIST.some(c => c.live && c.id === id)) { app.append(h('p', 'text-slate-400 py-20 text-center', 'Course not found. Choose a course from the Academy home.')); return; }
-  const s = h('script'); s.src = id === 'bettercap' ? 'courses/bettercap.js' : 'courses/catalog.js';
-  s.onload = () => build(window.COURSES[id], id); s.onerror = () => { app.textContent = 'Could not load the course.'; };
-  document.head.append(s);
-}
-
-const el = hdr(); $('#hdr').replaceWith(el);
-$('#arBtn').onclick = () => { W(AK, !R(AK, true)); applyAR(); };
-applyAR();
-document.body.dataset.page === 'hub' ? hub() : course();
+function command(o){const d=el('div','rounded-xl border border-slate-800 bg-slate-900 overflow-hidden my-5'),top=el('div','flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-800');top.append(el('div','font-medium',o.name||'Lab reference'));const b=el('button','text-xs border border-slate-700 rounded px-3 py-1','Copy');b.type='button';b.onclick=async()=>{if(o.lab&&!confirm('LAB ONLY: copy this reference only for an isolated environment or systems you are explicitly authorized to test.'))return;try{await navigator.clipboard.writeText(o.code);}catch(_){return toast('Clipboard unavailable');}toast('Copied');};top.append(b);const pre=el('pre','bg-slate-950 p-4 overflow-x-auto text-sm font-mono text-emerald-200');pre.dir='ltr';pre.textContent=o.code;d.append(top,pre);if(o.why)d.append(para(o.why,'px-4 py-3 text-sm text-slate-300'));if(o.ar)d.append(ar(o.ar));return d;}
+function item(node,course,id,refresh){const type=node[0],v=node[1];if(type==='p')return para(v);if(type==='h')return el('h3','text-lg font-semibold text-slate-100 mt-7 mb-2',v);if(type==='ul'||type==='ol')return list(type,v);if(type==='ar')return ar(v);if(type==='warn'){const d=el('div','rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 my-4');d.append(el('h3','font-semibold text-amber-300 mb-2','⚠ '+v));(node[2]||[]).forEach(t=>d.append(para(t,'text-amber-100/90 leading-7')));if(node[3])d.append(ar(node[3]));return d;}if(type==='refs'){const ul=el('ul','list-disc ps-6 space-y-2');v.forEach(([t,u])=>{const li=el('li'),a=link(u,t,'text-emerald-400 hover:underline');a.target='_blank';a.rel='noopener noreferrer';li.append(a);ul.append(li);});return ul;}if(type==='prob'){const d=el('div','rounded-xl border border-slate-800 bg-slate-900 p-4 my-4');d.append(el('h3','font-semibold mb-2',v.t),para(`Possible cause: ${v.cause}`),para(`Solution: ${v.fix}`));if(v.cmd)d.append(command(v.cmd));return d;}if(type==='cmd')return command(v);if(type==='quiz')return courseQuiz(course,id,refresh);}
+function courseQuiz(course,id,refresh){const box=el('div','rounded-xl border border-slate-800 bg-slate-900 p-5 mt-4');let index=0,correct=0;const answers=[];const draw=()=>{box.replaceChildren();if(index>=course.quiz.length){const percent=correct*100/course.quiz.length;S.recordQuiz(id,{score:correct,total:course.quiz.length,percent,answers});if(percent>=70)S.setActivity(id,'quiz',true);refresh();box.append(el('h3','text-xl font-semibold',`Score: ${correct}/${course.quiz.length} (${percent.toFixed(0)}%)`),para(percent>=70?'Course quiz passed. Complete the remaining activities to make the gate available.':'Review the explanations and retry. Incorrect answers were added to My Mistakes.','text-slate-300 my-3'));const r=el('button','rounded-lg bg-emerald-600 px-4 py-2 text-sm','Retake');r.onclick=()=>{index=0;correct=0;answers.length=0;draw();};box.append(r);return;}const q=course.quiz[index],title=el('p','font-medium mb-3');title.innerHTML=rich(q.q);box.append(el('p','text-xs text-slate-400 mb-2',`Question ${index+1} of ${course.quiz.length}`),title);const confidence=el('select','mb-3 rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm');['low','medium','high'].forEach(v=>confidence.append(new Option(`Confidence: ${v}`,v)));box.append(confidence);const buttons=[];q.o.forEach((option,k)=>{const b=el('button','block w-full text-start rounded-lg border border-slate-700 px-4 py-2.5 mb-2 text-sm',option);b.onclick=()=>{buttons.forEach(x=>x.disabled=true);const ok=k===q.a;if(ok)correct++;buttons[q.a].classList.add('border-emerald-500','bg-emerald-500/10');if(!ok){b.classList.add('border-rose-500','bg-rose-500/10');S.addWeakness({questionId:`course-${id}-${index}`,courseId:id,targetId:id,topic:C.byId[id].category,question:q.q,selected:option,correctAnswer:q.o[q.a],explanation:q.e,confidence:confidence.value});}answers.push({index,selected:k,correct:ok,confidence:confidence.value});const next=el('button','mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm',index+1<course.quiz.length?'Next':'See score');next.onclick=()=>{index++;draw();};box.append(para((ok?'Correct. ':'Not quite. ')+q.e,'text-sm mt-3 text-slate-300'),next);};buttons.push(b);box.append(b);});};draw();return box;}
+function loadScript(src){return new Promise((resolve,reject)=>{if(document.querySelector(`script[data-course-module="${src}"]`))return resolve();const s=el('script');s.src=src;s.dataset.courseModule=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});}
+function coursePage(){const id=new URLSearchParams(location.search).get('c'),meta=C.byId[id],app=$('#app');if(!meta){app.append(para('Course not found.','text-center text-slate-400 py-20'));return;}const access=S.courseAccess(id);if(!access.unlocked){const d=el('section','max-w-2xl mx-auto rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center');d.append(statusPill('Locked'),el('h1','text-3xl font-bold mt-4',meta.title),para(access.reason,'my-3 text-slate-300'),link('index.html','Return to learning path','inline-block rounded-lg bg-emerald-600 px-4 py-2'));app.append(d);return;}loadScript(meta.module).then(()=>buildCourse(window.COURSES[id],meta)).catch(()=>app.append(para('Could not load this course.','text-rose-300')));}
+function buildCourse(course,meta){document.title=`${course.title} | DevVault Academy`;const app=$('#app'),sections=course.sections;S.registerActivities(meta.id,sections.map(s=>s.id));const hero=el('section','mb-8 max-w-3xl'),chips=el('div','flex flex-wrap gap-2 my-3');[meta.level,meta.category,meta.duration,`Stage ${meta.stage}`].forEach(v=>chips.append(pill(v)));hero.append(el('p','font-mono text-xs text-emerald-400',`COURSE ${meta.num}`),el('h1','text-3xl font-bold mt-1',course.title),chips,para(course.desc||meta.description),ar(course.ar||'تلميحات عربية مفعلة افتراضيًا.'));const side=el('aside','lg:sticky lg:top-20 self-start space-y-4'),main=el('div','min-w-0'),progressText=el('p','text-sm text-slate-300'),progressBar=bar(0),nav=el('nav','space-y-1'),buttons={},search=el('input','w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-sm'),results=el('div','space-y-2 text-sm');search.type='search';search.placeholder='Search lessons…';sections.forEach(s=>{const a=link('#'+s.id,'','flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800'),mark=el('span','w-4 text-emerald-400');a.append(mark,el('span','',s.short));a._mark=mark;buttons[s.id]=a;nav.append(a);});side.append(progressText,progressBar,search,results,nav);let current;const refresh=()=>{const p=S.courseProgress(meta.id),state=S.course(meta.id);progressText.textContent=`${p.percent}% · ${p.completed}/${p.total} activities · quiz best ${Math.round(p.quizBest)}%`;progressBar.firstChild.style.width=p.percent+'%';sections.forEach(sec=>{buttons[sec.id]._mark.textContent=state.completedActivities?.[sec.id]?'✓':'';buttons[sec.id].classList.toggle('bg-slate-800',current===sec.id);});};const show=id=>{const index=Math.max(0,sections.findIndex(s=>s.id===id)),sec=sections[index];current=sec.id;main.replaceChildren(el('h2','text-2xl font-semibold mb-4',sec.title));sec.items.forEach(n=>{const rendered=item(n,course,meta.id,refresh);if(rendered)main.append(rendered);});const lab=el('label','flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 mt-8 cursor-pointer'),cb=el('input','h-4 w-4 accent-emerald-500');cb.type='checkbox';cb.checked=!!S.course(meta.id).completedActivities?.[sec.id];cb.onchange=()=>{if(sec.id==='quiz'&&cb.checked&&S.courseProgress(meta.id).quizBest<70){cb.checked=false;return toast('Pass the course quiz before completing this activity.');}S.setActivity(meta.id,sec.id,cb.checked);refresh();};lab.append(cb,el('span','text-sm','Mark this activity as complete'));main.append(lab);const n=el('div','flex justify-between mt-4 text-sm');n.append(index?link(`#${sections[index-1].id}`,'← '+sections[index-1].short):el('span'));if(index<sections.length-1)n.append(link(`#${sections[index+1].id}`,sections[index+1].short+' →'));main.append(n);refresh();window.scrollTo({top:0});};search.oninput=()=>{const q=search.value.trim().toLowerCase();results.replaceChildren();if(q.length<2)return;sections.filter(s=>JSON.stringify(s).toLowerCase().includes(q)).forEach(s=>results.append(link('#'+s.id,s.short,'block rounded border border-slate-800 px-3 py-2')));};const grid=el('div','grid lg:grid-cols-[17rem_minmax(0,1fr)] gap-8');grid.append(side,main);app.replaceChildren(hero,grid);addEventListener('hashchange',()=>show(location.hash.slice(1)));show(location.hash.slice(1));}
+function gatePage(){const targetId=new URLSearchParams(location.search).get('target'),target=C.stageById[targetId]||C.trackById[targetId],app=$('#app');if(!target){app.append(para('Assessment not found.','text-center py-20'));return;}const stage=C.stageById[targetId]||C.stageById['stage-5'],status=S.targetStatus(targetId),hero=el('section','max-w-3xl mb-8');hero.append(el('p','font-mono text-xs text-emerald-400','MASTERY GATE'),el('h1','text-3xl font-bold mt-1',target.title),ar(target.ar),para('Pass mark: 90%. For Stage 3 and above, current and retention sections must each reach 90%, and the overall score must reach 90%. Exactly 90% passes; anything below 90% fails.'));app.append(hero);const summary=el('div','rounded-xl border border-slate-800 bg-slate-900 p-5 mb-6');summary.append(statusPill(status),para(assessmentSummary(targetId),'mt-3 text-slate-300'));const history=S.attempts(targetId).slice(-5).reverse();if(history.length){const table=el('div','overflow-x-auto mt-4'),t=el('table','w-full text-sm text-left');t.innerHTML='<thead class="text-slate-400"><tr><th class="py-2">Attempt</th><th>Overall</th><th>Current</th><th>Retention</th><th>Result</th></tr></thead>';const body=el('tbody');history.forEach((a,i)=>{const r=el('tr','border-t border-slate-800');[`#${S.attempts(targetId).length-i}`,`${a.overall.toFixed(0)}%`,`${a.current.toFixed(0)}%`,`${a.retention.toFixed(0)}%`,a.passed?'Passed':'Retry'].forEach(v=>r.append(el('td','py-2 pe-3',v)));body.append(r);});t.append(body);table.append(t);summary.append(table);}app.append(summary);if(status==='Locked')return app.append(para(`Master Stage ${stage.number-1} first.`,'text-amber-300'));if(!S.targetReady(targetId)){const missing=target.courses.filter(id=>!S.courseProgress(id).complete);app.append(el('h2','text-xl font-semibold mb-3','Complete required courses first'));const ul=el('ul','space-y-2');missing.forEach(id=>{const p=S.courseProgress(id),li=el('li');li.append(link(`course.html?c=${id}`,`${C.byId[id].title} — ${p.percent}% activities, quiz ${Math.round(p.quizBest)}%`,'block rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 hover:border-emerald-500'));ul.append(li);});app.append(ul);return;}const start=el('button','rounded-lg bg-emerald-600 hover:bg-emerald-500 px-5 py-3 font-medium','Start randomized assessment');start.onclick=()=>renderAssessment(app,targetId);app.append(start);}
+function renderAssessment(app,targetId){const attempt=A.createAttempt(targetId),form=el('form','space-y-5'),answers={},conf={};app.replaceChildren();app.append(el('p','font-mono text-xs text-emerald-400','MASTERY ASSESSMENT'),el('h1','text-3xl font-bold mb-2',C.stageById[targetId]?.title||C.trackById[targetId].title),para(`${attempt.questions.length} questions · no duplicates · answers are randomized where safe.`));attempt.questions.forEach((q,i)=>{const field=el('fieldset','rounded-xl border border-slate-800 bg-slate-900 p-5'),legend=el('legend','font-medium px-1',`${i+1}. ${q.q}`);field.append(legend,pill(q.section==='retention'?'Retention':'Current',q.section==='retention'?'amber':'sky'));const multi=q.type==='multiple';q.options.forEach((opt,k)=>{const label=el('label','flex items-start gap-3 rounded-lg border border-slate-800 px-3 py-2.5 mt-2 cursor-pointer hover:border-slate-600'),input=el('input','mt-1 accent-emerald-500');input.type=multi?'checkbox':'radio';input.name=q.id;input.value=String(k);input.onchange=()=>{answers[q.id]=multi?$$(`input[name="${CSS.escape(q.id)}"]:checked`,field).map(x=>Number(x.value)):[k];};label.append(input,el('span','text-sm text-slate-200',opt));field.append(label);});const select=el('select','mt-3 rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm');['low','medium','high'].forEach(v=>select.append(new Option(`Confidence: ${v}`,v)));select.onchange=()=>conf[q.id]=select.value;conf[q.id]='low';field.append(select);form.append(field);});const submit=el('button','rounded-lg bg-emerald-600 hover:bg-emerald-500 px-5 py-3 font-medium','Submit assessment');submit.type='submit';form.append(submit);form.onsubmit=e=>{e.preventDefault();if(attempt.questions.some(q=>!(answers[q.id]||[]).length))return toast('Answer every question before submitting.');const result=A.grade(attempt,answers);S.recordAssessment(targetId,{overall:result.overall,current:result.current,retention:result.retention,right:result.right,total:result.total,passed:result.passed,questionIds:attempt.questions.map(q=>q.sourceId||q.id)});result.rows.filter(r=>!r.correct).forEach(r=>{const q=attempt.questions.find(x=>x.id===r.questionId);S.addWeakness({questionId:r.sourceId,targetId,topic:r.topic,question:r.question,selected:r.selected.map(i=>q.options[i]).join('; '),correctAnswer:r.expected.map(i=>q.options[i]).join('; '),explanation:r.explanation,confidence:conf[q.id]});});renderResult(app,result);};app.append(form);}
+function renderResult(app,r){app.replaceChildren();const d=el('section','max-w-3xl rounded-2xl border p-8 '+(r.passed?'border-emerald-500/40 bg-emerald-500/5':'border-rose-500/40 bg-rose-500/5'));d.append(statusPill(r.passed?'Mastered':'Retry Required'),el('h1','text-3xl font-bold mt-4',r.passed?'Gate passed':'Gate not passed'),para(`Overall ${r.overall.toFixed(0)}% · Current ${r.current.toFixed(0)}% · Retention ${r.retention.toFixed(0)}% · ${r.right}/${r.total} correct`,'text-slate-200 my-4'));if(!r.passed)d.append(para('Review My Mistakes, revisit the related course sections, then take a new randomized attempt.','text-slate-300'));const actions=el('div','flex flex-wrap gap-3 mt-5');actions.append(link('index.html','Return to learning path','rounded-lg bg-emerald-600 px-4 py-2'),link('mistakes.html','Review mistakes','rounded-lg border border-slate-700 px-4 py-2'));d.append(actions);app.append(d);}
+function mistakesPage(){const app=$('#app'),top=el('section','mb-8');top.append(el('h1','text-3xl font-bold','My Mistakes & Weaknesses'),para('Incorrect answers are grouped by stable question ID. Repeated mistakes increase the count instead of creating duplicates.'),ar('يمكنك مراجعة الأخطاء وتغيير حالتها أو تصديرها دون إرسال بياناتك إلى أي خادم.'));app.append(top);const controls=el('div','grid sm:grid-cols-4 gap-3 mb-5'),search=el('input','rounded-lg bg-slate-900 border border-slate-800 px-3 py-2'),status=el('select','rounded-lg bg-slate-900 border border-slate-800 px-3 py-2'),topic=el('select','rounded-lg bg-slate-900 border border-slate-800 px-3 py-2'),exportBtn=el('button','rounded-lg border border-slate-700 px-3 py-2','Export');search.placeholder='Search mistakes…';['','unreviewed','reviewing','resolved'].forEach(v=>status.append(new Option(v||'All review states',v)));controls.append(search,status,topic,exportBtn);app.append(controls);const listBox=el('div','space-y-4');app.append(listBox);const weaknesses=()=>Object.values(S.load().weaknesses);[...new Set(weaknesses().map(x=>x.topic).filter(Boolean))].sort().forEach(v=>topic.append(new Option(v,v)));topic.prepend(new Option('All topics',''));const draw=()=>{const q=search.value.toLowerCase(),st=status.value,tp=topic.value;listBox.replaceChildren();const rows=weaknesses().filter(x=>!st||x.status===st).filter(x=>!tp||x.topic===tp).filter(x=>JSON.stringify(x).toLowerCase().includes(q));rows.forEach(w=>{const card=el('article','rounded-xl border border-slate-800 bg-slate-900 p-5'),head=el('div','flex flex-wrap items-start justify-between gap-3'),h=el('div');h.append(pill(w.topic||'General'),el('h2','font-semibold mt-2',w.question));head.append(h,pill(`Seen ${w.count}×`,w.count>1?'amber':'slate'));card.append(head,para(`Your answer: ${w.selected||'No answer'}`,'text-sm text-rose-300 mt-3'),para(`Correct answer: ${w.correctAnswer}`,'text-sm text-emerald-300 mt-1'),para(w.explanation,'text-sm text-slate-300 mt-2'),para(`Confidence: ${w.confidence||'not recorded'} · Last seen: ${new Date(w.lastSeenAt).toLocaleString()}`,'text-xs text-slate-500 mt-2'));const sel=el('select','mt-3 rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm');['unreviewed','reviewing','resolved'].forEach(v=>sel.append(new Option(v,v)));sel.value=w.status;sel.onchange=()=>{S.setWeaknessStatus(w.key,sel.value);draw();};card.append(sel);listBox.append(card);});if(!rows.length)listBox.append(para('No matching mistakes.','text-slate-500 py-8'));};[search,status,topic].forEach(x=>x.addEventListener(x===search?'input':'change',draw));exportBtn.onclick=()=>{const format=confirm('Choose OK for JSON or Cancel for CSV.')?'json':'csv',rows=weaknesses();let body,type,name;if(format==='json'){body=JSON.stringify(rows,null,2);type='application/json';name='devvault-weaknesses.json';}else{const cols=['questionId','targetId','topic','question','selected','correctAnswer','confidence','count','status','lastSeenAt'],quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';body=[cols.join(','),...rows.map(r=>cols.map(c=>quote(r[c])).join(','))].join('\n');type='text/csv';name='devvault-weaknesses.csv';}const a=el('a');a.href=URL.createObjectURL(new Blob([body],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0);};const reset=el('button','mt-8 text-sm text-rose-300 border border-rose-500/30 rounded-lg px-4 py-2','Reset all Academy progress');reset.onclick=()=>{if(confirm('Reset all v2 course progress, assessment history, and mistakes? Legacy v1 keys will remain untouched.')){S.resetProgress();location.href='index.html';}};app.append(reset);draw();}
+S.migrate();installHeader();const page=document.body.dataset.page;if(page==='hub')hub();else if(page==='course')coursePage();else if(page==='gate')gatePage();else if(page==='mistakes')mistakesPage();
 })();

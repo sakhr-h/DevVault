@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cybersecurity Academy | DevVault</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Cpath d='M32 9 52 17v13c0 13-8 21-20 26C20 51 12 43 12 30V17l20-8Z' fill='%2310b981'/%3E%3Cpath d='m23 32 6 6 13-14' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="stylesheet" href="assets/academy.css">
@@ -13,13 +14,19 @@
 <main class="max-w-7xl mx-auto px-4 py-12">
  <section class="mb-10 max-w-3xl">
   <h1 class="text-4xl font-bold tracking-tight">Cybersecurity Academy</h1>
-  <p class="mt-3 text-slate-300 leading-7">Seventeen hands-on courses on network security, from reconnaissance basics to defensive monitoring. Every exercise is designed for an isolated lab or an authorized network.</p>
+  <p class="mt-3 text-slate-300 leading-7"><span id="courseCount">27</span> courses arranged as a gated learning path, from foundations to two advanced specializations. Progress is stored only in this browser.</p>
   <p class="ar arbox mt-2 text-emerald-100/90 text-sm leading-7">تعلّم أمن الشبكات عبر تمارين مخصصة للمختبرات المحلية والشبكات المصرح بها فقط.</p>
   <p class="mt-4 inline-block rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm text-amber-200">LAB ONLY: never test networks or devices you do not own or have explicit permission to test.</p>
  </section>
- <label class="block max-w-xl mb-6"><span class="sr-only">Search courses</span><input id="courseSearch" type="search" class="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="Search all seventeen courses…" aria-label="Search courses"></label>
+ <section class="mb-12"><div class="flex items-end justify-between gap-3 mb-5"><div><p class="font-mono text-xs text-emerald-400">LEARNING PATH</p><h2 class="text-2xl font-semibold">Stages & mastery gates</h2></div><a href="mistakes.html" class="text-sm text-emerald-400 hover:underline">Review mistakes →</a></div><div id="roadmap" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div></section>
+ <section><div class="mb-5"><p class="font-mono text-xs text-emerald-400">COURSE CATALOG</p><h2 class="text-2xl font-semibold">Find a course</h2></div>
+ <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6"><label><span class="sr-only">Search courses</span><input id="courseSearch" type="search" class="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="Search all courses…" aria-label="Search courses"></label><select id="stageFilter" class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm"><option value="">All stages</option><option value="0">Stage 0</option><option value="1">Stage 1</option><option value="2">Stage 2</option><option value="3">Stage 3</option><option value="4">Stage 4</option><option value="5">Stage 5</option></select><select id="trackFilter" class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm"><option value="">All tracks</option><option value="A">Track A</option><option value="B">Track B</option></select><select id="categoryFilter" class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm"><option value="">All categories</option></select></div>
  <div id="cards" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+ </section>
 </main>
+<script src="assets/curriculum.js"></script>
+<script src="assets/state.js"></script>
+<script src="assets/assessments.js"></script>
 <script src="assets/academy.js"></script>
 </body>
 </html>
